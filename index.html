@@ -6,8 +6,34 @@
     <title>Ricochet Rumble</title>
     <script src="./script.js"></script>
     <link rel="stylesheet" href="./styles.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jacquard+24&display=swap" rel="stylesheet">
 </head>
-<body>
-    
+<body id="background" >
+   <div class="backgroundDiv">
+    <div class="HeadingFlex">
+        <div></div>
+        <div id="Heading">
+            <div></div>
+            <div id="HeadingName"> Ricochet Rumble </div>
+            <div></div>
+        </div>
+        <div></div>
+    </div>
+    <div id="playingSection">
+    <div id="Player-1-flex">
+        <div id="Player-1"><div id="Player-1-name">Hello</div></div>
+        <div id="Player-1-time"></div>
+    </div>
+    <div id="grid-Container"> </div>
+    <div id="Player-2-flex">
+        <div id="Player-2"><div id="Player-2-name">Pamello</div></div>
+        <div id="Player-2-time" ></div>
+    </div>
+    </div>
+   </div>
+   <button onclick="populateGrid()">Start</button>
 </body>
 </html>

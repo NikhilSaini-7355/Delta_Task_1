@@ -1,0 +1,106 @@
+#background
+{
+    background-image: url('./assets/Background2.jpg'); 
+    /* clipart 
+    little bit more work on background required */
+    background-size: cover;
+}
+
+.backgroundDiv{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    
+}
+#Heading
+{   display: flex;
+    flex-direction: column;
+    background-image: url('./assets/HeadingBanner2.png');
+    background-size: cover;
+    font-size: xx-large;
+    height: 100px;
+    width: auto;
+    flex-basis: 18%;
+    text-align: center;
+}
+
+#HeadingName{
+    padding-top: 46px;
+    font-family: "Jacquard 24", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    font-size: xx-large;
+    color: gold;
+}
+
+.HeadingFlex{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#grid-Container{
+     display: grid;
+     grid-template-columns: auto auto auto auto auto auto auto auto;
+}
+
+#playingSection{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#Player-1-flex{
+    display: flex;
+    flex-basis: 15%;
+    flex-direction: column;
+}
+
+#Player-2-flex{
+    display: flex;
+    flex-basis: 15%;
+    flex-direction: column;
+}
+
+#Player-1{
+    display: flex;
+    flex-direction: column;
+    background-image: url('./assets/HeadingBanner2.png');
+    background-size: cover;
+    font-size: xx-large;
+    /* height: 100px;
+    width: 100px; */
+    
+   
+    text-align: center;
+}
+
+#Player-1-name{
+    padding-top: 46px;
+    font-family: "Jacquard 24", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    color: gold;
+    
+}
+
+#Player-2{
+    display: flex;
+    flex-direction: column;
+    background-image: url('./assets/HeadingBanner2.png');
+    background-size: auto 100px;
+    font-size: xx-large;
+    height: 100px;
+    width: auto;
+    
+    text-align: center;
+}
+
+#Player-2-name{
+    padding-top: 46px;
+    font-family: "Jacquard 24", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    color: gold;
+    
+}
