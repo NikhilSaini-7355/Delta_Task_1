@@ -78,7 +78,8 @@ var i; var c;
         })
     // var Boxes = document.getElementsByClassName('box');
     //  var j = 0;
-    
+    player1timer();
+    player2timer();
  }
 
    function move(i)
@@ -130,8 +131,53 @@ function lighten(selectedBoxes)
     })
 }
 
+function unlighten(selectedBoxes)
+{
 
-// function unlighten(selectedBoxes)
-// {
+}
 
-// }
+function player1timer()
+{
+var countDownDate = new Date("Jan 5, 2027 15:37:31").getTime();
+
+var x = setInterval(function() {
+
+  var now = new Date("Jan 5, 2027 15:37:11").getTime();
+
+  var distance = countDownDate - now;
+
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  document.getElementById("Player-1-timer").innerHTML = minutes + "m :" + seconds + "s ";
+
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("Player-2-timer").innerHTML = "PLAYER 2 WON";
+    alert("Player 2 won");
+  }
+}, 1000);
+}
+
+function player2timer()
+{
+var countDownDate = new Date("Jan 5, 2027 15:37:31").getTime();
+
+var x = setInterval(function() {
+
+var now = new Date("Jan 5, 2027 15:37:11").getTime();
+
+var distance = countDownDate - now;
+
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  document.getElementById("Player-2-timer").innerHTML = minutes + "m :" + seconds + "s ";
+
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("Player-2-timer").innerHTML = "PLAYER 1 WON";
+    alert("Player 1 won");
+  }
+}, 1000);
+}

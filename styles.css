@@ -106,6 +106,33 @@
     
 }
 
+#Player-1-timer {
+   background-color: white;
+   border-style: solid;
+   border-color: black;
+   width: auto;
+   height: max-content;
+   padding-top: 15px;
+   padding-bottom: 15px;
+   font-size: xx-large;
+   font-style: normal;
+   font-weight: bold;
+   text-align: center;
+}
+
+#Player-2-timer {
+   background-color: white;
+   border-style: solid;
+   border-color: black;
+   width: auto;
+   height: max-content;
+   padding-top: 15px;
+   padding-bottom: 15px;
+   font-size: xx-large;
+   font-style: normal;
+   font-weight: bold;
+   text-align: center;
+}
 .lighten{
    border-style: solid;
    border-color: darkblue;
