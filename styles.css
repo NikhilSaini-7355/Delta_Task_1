@@ -135,6 +135,7 @@
 }
 .lighten{
    border-style: solid;
-   border-color: darkblue;
-   background-color: yellow;
+   border-color: rgba(255, 255, 0, 0.5);
+   border-width: 15px;
+   background-image: url(./assets/black-bullet.svg);
 }
