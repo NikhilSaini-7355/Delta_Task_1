@@ -21,12 +21,13 @@
                    '','','',redCanon,redTank,redRicochet,redSemiricochet,redTitan ]
 
 var selectedBoxes = [];
-
+var i; var c;
  function populateGrid()
 { 
     const parent = document.getElementById('grid-Container');
     var h = 0;
-    for(var i=1;i<=64;i++)
+    var c = 0;
+    for( i=1;i<=64;i++)
         {
             const child = document.createElement("div");
             if((i+h)%2==1)
@@ -55,22 +56,36 @@ var selectedBoxes = [];
             
           
             svg.setAttribute('src',boardStatus[i-1]);
-            svg.setAttribute('id',boardStatus[i-1]);
+            svg.setAttribute('alt',boardStatus[i-1].split("/")[2]);
+            svg.setAttribute('id',boardStatus[i-1].split("/")[2]);
             svg.setAttribute('style',' align-content: center; ');
-            svg.addEventListener("click",()=> { move(i-1) });
+            c = i-1;
+            // svg.addEventListener('click',()=>{ 
+            //     c = i;
+            //     move(); } );
             child.appendChild(svg);
             
-
         }
-        
-    var Boxes = document.getElementsByClassName('box');
-     var j = 0;
+         var k = -1;
+        boardStatus.map((val)=>{
+            k++;
+            if(val!='')
+                { 
+                    document.getElementById(val.split("/")[2]).addEventListener("click",()=>{
+                        move(k);
+                    })
+                }
+        })
+    // var Boxes = document.getElementsByClassName('box');
+    //  var j = 0;
     
  }
 
- function move(i)
- {  selectedBoxes = [];
-    alert("hi");
+   function move(i)
+ {  //var i =c;
+    console.log(i);
+    selectedBoxes = [];
+    // alert("hi");
        if(i-8>=0 && boardStatus[i-8]=='')
         {
            selectedBoxes.push(i-8);
@@ -83,18 +98,40 @@ var selectedBoxes = [];
         {
             selectedBoxes.push(i-8);
         }
-        if(i+8<=64 && boardStatus[i+8]=='')
+        if(i-1>=0 && i%8!=0 && boardStatus[i-1]=='')
+            {
+                selectedBoxes.push(i-1);
+            }
+        if(i+8<=63 && boardStatus[i+8]=='')
         {
             selectedBoxes.push(i-8);
         }
-        if(i+8-1<=64 && (i+8)%8!=0 && boardStatus[i+8-1]=='')
+        if(i+8-1<=63 && (i+8)%8!=0 && boardStatus[i+8-1]=='')
         {
             selectedBoxes.push(i-8-1);
         }
-        if(i+8+1<=64 && (i+8+1)%8!=0 && boardStatus[i+8+1]=='')
+        if(i+8+1<=63 && (i+8+1)%8!=0 && boardStatus[i+8+1]=='')
         {
             selectedBoxes.push(i-8);
         }
-
-        
+        if(i+1<=63 && (i+1)%8!=0 && boardStatus[i+1]=='')
+            {
+                selectedBoxes.push(i+1);
+            }
+    lighten(selectedBoxes);
+    //unlighten(selectedBoxes);    
  }
+
+function lighten(selectedBoxes)
+{   console.log(selectedBoxes);
+    selectedBoxes.map((val)=>{
+        const child = document.getElementById('box-'+(val+1));
+        child.classList.add('.lighten');
+    })
+}
+
+
+// function unlighten(selectedBoxes)
+// {
+
+// }
