@@ -10,6 +10,8 @@
  var redSemiricochet = './assets/red-semiricochet.svg';
  var redTitan = './assets/red-titan.svg';
 
+ var player1time = 30;
+ var player2time = 30;
  var boardStatus = [
     blackCanon,blackTank,blackRicochet,blackSemiricochet,blackTitan,'','','',
                    '','','','','','','','',
@@ -39,7 +41,7 @@ var i; var c;
                     child.setAttribute('style','border-style: solid; border-width: thin; width:80px ; height: 80px;background-color:green ;');
                 }
                 child.setAttribute('id','box-'+i);
-                child.setAttribute('class','box');
+                child.setAttribute('class','box ');
             // child.innerHTML = i;
             parent.appendChild(child);
             if(i%8==0)
@@ -136,48 +138,53 @@ function unlighten(selectedBoxes)
 
 }
 
+
 function player1timer()
 {
-var countDownDate = new Date("Jan 5, 2027 15:37:31").getTime();
+//var countDownDate = new Date("Jan 5, 2027 15:37:31").getTime();
 
 var x = setInterval(function() {
 
-  var now = new Date("Jan 5, 2027 15:37:11").getTime();
+  //var now = new Date().getTime();
 
-  var distance = countDownDate - now;
+  //var distance = countDownDate - now;
 
-  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  var minutes = 0;
+  var seconds = player1time;
 
   document.getElementById("Player-1-timer").innerHTML = minutes + "m :" + seconds + "s ";
-
-  if (distance < 0) {
+ // console.log("player1 timer"+minutes+"  "+seconds);
+  
+  if (player1time < 0) {
     clearInterval(x);
     document.getElementById("Player-2-timer").innerHTML = "PLAYER 2 WON";
     alert("Player 2 won");
   }
+  player1time--;
 }, 1000);
 }
 
 function player2timer()
 {
-var countDownDate = new Date("Jan 5, 2027 15:37:31").getTime();
+//var countDownDate = new Date("Jan 5, 2027 15:37:31").getTime();
 
 var x = setInterval(function() {
 
-var now = new Date("Jan 5, 2027 15:37:11").getTime();
+//var now = new Date().getTime();
 
-var distance = countDownDate - now;
+//var distance = countDownDate - now;
 
-  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  var minutes = 0;
+  var seconds = player2time;
 
   document.getElementById("Player-2-timer").innerHTML = minutes + "m :" + seconds + "s ";
-
-  if (distance < 0) {
+  //console.log("player2 timer"+minutes+"   "+seconds);
+  
+  if (player2time < 0) {
     clearInterval(x);
     document.getElementById("Player-2-timer").innerHTML = "PLAYER 1 WON";
     alert("Player 1 won");
   }
+  player2time--;
 }, 1000);
 }
