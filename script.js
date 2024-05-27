@@ -61,31 +61,22 @@ var i; var c;
             svg.setAttribute('alt',i);
             svg.setAttribute('id',boardStatus[i-1].split("/")[2]);
             svg.setAttribute('style',' align-content: center; ');
-            c = i-1;
+            // c = i-1;
             svg.addEventListener('click',()=>{ move(svg.alt) } );
             child.appendChild(svg);
             
         }
-        //  var k = -1;
-        // boardStatus.map((val)=>{
-        //     k++;
-        //     if(val!='')
-        //         { 
-        //             document.getElementById(val.split("/")[2]).addEventListener("click",()=>{
-        //                 move(k);
-        //             })
-        //         }
-        // })
-    // var Boxes = document.getElementsByClassName('box');
-    //  var j = 0;
-    player1timer();
-    player2timer();
+       
+    player1timer(1);
+    player2timer(0);
  }
 
+ var selectedBoxfound = false;
    function move(i)
  {  //var i =c;
     //console.log(i);
     i = +(i-1);
+    unlighten(selectedBoxes)
     selectedBoxes = [];
     // alert("hi");
     console.log(i-8>=0 && boardStatus[i-8]=='' )
@@ -122,73 +113,160 @@ var i; var c;
             {    console.log("8");
                 selectedBoxes.push(i+1);
             }
-    lighten(selectedBoxes);
+            
+    lighten(selectedBoxes,i);
     //unlighten(selectedBoxes);    
  }
 
-function lighten(selectedBoxes)
-{   console.log(selectedBoxes);
+ var eventhandler = ()=>{ };
+function lighten(selectedBoxes,i)
+{   
+    console.log(selectedBoxes);
+    if(selectedBoxes.length!=0)
+        {
+            selectedBoxfound = true;
+        }
     selectedBoxes.map((val)=>{
         const child = document.getElementById('box-'+(val+1));
         child.classList.add('lighten');
+         eventhandler = ()=>
+        {
+            selectedBoxClicked(i,val);
+        }
+        child.addEventListener("click",eventhandler)
     })
 }
 
+function selectedBoxClicked(i,val)
+{  
+   console.log("interchanged");
+   console.log(i+"  "+val); // working
+   const child1 = document.getElementById('box-'+(i+1))
+   const child2 = document.getElementById('box-'+(val+1))
+   const svg = document.getElementById(boardStatus[i].split("/")[2])
+   var temp = boardStatus[i];
+   boardStatus[i] = boardStatus[val];
+   boardStatus[val] = temp;
+   svg.setAttribute('src',boardStatus[val]);
+   svg.setAttribute('alt',(val+1));
+   svg.setAttribute('id',boardStatus[val].split("/")[2]);
+   child1.removeChild(svg);
+   child2.appendChild(svg);
+
+   if(boardStatus[val].indexOf("red")!=-1)
+    {   console.log("hello");
+        player1timer(0);
+        player2timer(1);
+    }
+    else if(boardStatus[val].indexOf("black")!=-1)
+    {   console.log("pamello")
+        player1timer(1);
+        player2timer(0)
+    }
+   
+   unlighten(selectedBoxes);
+   selectedBoxes = [];
+} 
 function unlighten(selectedBoxes)
-{
+{   
     selectedBoxes.map((val)=>{
         const child = document.getElementById('box-'+(val+1));
         child.classList.remove('lighten');
+        child.removeEventListener("click",eventhandler)
     })
+    selectedBoxes = [];
+    //selectedBoxfound = false;
 }
 
-
-function player1timer()
-{
+var x ;
+function player1timer(status)
+{ console.log(status)
 //var countDownDate = new Date("Jan 5, 2027 15:37:31").getTime();
+var minutes = 0;
 
-var x = setInterval(function() {
+if(status==0)
+    {
+        seconds = 30;
+        document.getElementById("Player-1-timer").innerHTML = minutes + "m :" + seconds + "s ";
+        player1time = 30;
+        console.log("status is 0-1")
+        clearInterval(x);
+        return;
+    }
+    else if(status==1)
+        {
+             x = setInterval(function() {
 
-  //var now = new Date().getTime();
+                //var now = new Date().getTime();
+              
+                //var distance = countDownDate - now;
+              
+                minutes = 0;
+                var seconds = player1time;
+                console.log("status is 1-1")
+                document.getElementById("Player-1-timer").innerHTML = minutes + "m :" + seconds + "s ";
+               // console.log("player1 timer"+minutes+"  "+seconds);
+                
+                if (player1time < 0) {
+                  clearInterval(x);
+                  document.getElementById("Player-2-timer").innerHTML = "PLAYER 2 WON";
+                  alert("Player 2 won");
+                }
+                player1time--;
+              }, 1000);
+        }
 
-  //var distance = countDownDate - now;
+}
+var y;
+function player2timer(status)
+{  console.log(status);
+//var countDownDate = new Date("Jan 5, 2027 15:37:31").getTime();
+ var minutes = 0;
+ if(status==0)
+    {
+        seconds = 30;
+        document.getElementById("Player-2-timer").innerHTML = minutes + "m :" + seconds + "s ";
+        clearInterval(y);
+        player2time = 30;
+        console.log("status is 0-2")
+        return;
+    }
+    else if(status == 1)
+        {
+                y = setInterval(function() {
 
-  var minutes = 0;
-  var seconds = player1time;
+                //var now = new Date().getTime();
+                
+                //var distance = countDownDate - now;
+                console.log("status is 0-2")
+                  minutes = 0;
+                  var seconds = player2time;
+                  
+                  document.getElementById("Player-2-timer").innerHTML = minutes + "m :" + seconds + "s ";
+                  //console.log("player2 timer"+minutes+"   "+seconds);
+                  
+                  if (player2time < 0) {
+                    clearInterval(x);
+                    document.getElementById("Player-2-timer").innerHTML = "PLAYER 1 WON";
+                    alert("Player 1 won");
+                  }
+                  player2time--;
+                }, 1000);
+        }
 
-  document.getElementById("Player-1-timer").innerHTML = minutes + "m :" + seconds + "s ";
- // console.log("player1 timer"+minutes+"  "+seconds);
-  
-  if (player1time < 0) {
-    clearInterval(x);
-    document.getElementById("Player-2-timer").innerHTML = "PLAYER 2 WON";
-    alert("Player 2 won");
-  }
-  player1time--;
-}, 1000);
 }
 
-function player2timer()
+function shootBullet()
 {
-//var countDownDate = new Date("Jan 5, 2027 15:37:31").getTime();
 
-var x = setInterval(function() {
+}
 
-//var now = new Date().getTime();
+function winningLogic()
+{
 
-//var distance = countDownDate - now;
+}
 
-  var minutes = 0;
-  var seconds = player2time;
+function rotatePiece()
+{
 
-  document.getElementById("Player-2-timer").innerHTML = minutes + "m :" + seconds + "s ";
-  //console.log("player2 timer"+minutes+"   "+seconds);
-  
-  if (player2time < 0) {
-    clearInterval(x);
-    document.getElementById("Player-2-timer").innerHTML = "PLAYER 1 WON";
-    alert("Player 1 won");
-  }
-  player2time--;
-}, 1000);
 }
