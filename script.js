@@ -24,6 +24,8 @@
 
 var selectedBoxes = [];
 var gamestatus = true;
+var gameChance = "red";
+
 var i; var c;
 
 function randomArrangement()
@@ -49,6 +51,7 @@ function resetGame()
    player1time = 30;
    player2time = 30;
    populateGrid();
+   localStorage.clear();
 }
 
  function populateGrid()
@@ -100,6 +103,8 @@ function resetGame()
        
     player1timer(1);
     player2timer(0);
+   // gameChanceController();
+    localStorage.clear();
  }
 
  var selectedBoxfound = false;
@@ -109,8 +114,13 @@ function resetGame()
         alert("game paused");
         return;
     }
-
+    
     i = +(i-1);
+    if(boardStatus[i].indexOf(gameChance)==-1)
+        {
+            alert("its chance of "+gameChance);
+            return;
+        }
     unlighten(selectedBoxes)
     selectedBoxes = [];
     // alert("hi");
@@ -174,6 +184,7 @@ function selectedBoxClicked(i,val)
         alert("game paused");
         return;
     }
+    
    console.log("interchanged");
    console.log(i+"  "+val); // working
    const child1 = document.getElementById('box-'+(i+1))
@@ -192,15 +203,20 @@ function selectedBoxClicked(i,val)
     {   console.log("hello");
         player1timer(0);
         player2timer(1);
+        changeChance();
+        // can replace above two lines with gameChanceController
         shootBullet("red");
     }
     else if(boardStatus[val].indexOf("black")!=-1)
     {   console.log("pamello")
         player1timer(1);
         player2timer(0);
+        changeChance();
+        // can replace above two lines with gameChanceController
+
         shootBullet("black");
     }
-   
+   saveToStorage(i,val);
    unlighten(selectedBoxes);
    selectedBoxes = [];
 } 
@@ -404,17 +420,45 @@ function rotatePiece()
 
 function gameChanceController()
 {
-
+   if(gameChance == "red")
+    {
+        player1timer(1);
+        player2timer(0);
+    }
+    else
+    {
+        player1timer(0);
+        player2timer(1);
+    }
+    changeChance();
 }
 
-function saveToStorage()
+function changeChance()
 {
-    
+    if(gameChance=="red")
+        {
+            gameChance = "black";
+        }
+      else{
+        gameChance = "red"
+      }
+}
+var steps = 0;
+function saveToStorage(index1,index2)
+{  var piece = boardStatus[index1];
+    steps++;
+   var x1 = Math.floor((index1/8)+1);
+   var y1 = Math.floor((index1%8)+1);
+   var x2 = Math.floor((index2/8)+1);
+   var y2 = Math.floor((index2%8)+1);
+
+   localStorage.setItem(steps,"("+x1+","+y1+") to ("+x2+","+y2+")");
+   console.log(piece.split('/')[2])  
 }
 
 function undo()
 {
-
+   
 }
 
 function redo()
