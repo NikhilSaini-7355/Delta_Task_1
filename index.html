@@ -35,11 +35,22 @@
     </div>
    </div>
    
-   <button onclick="populateGrid()">Start</button>
-   <button onclick="pauseGame()">Pause</button>
-   <button onclick="resumeGame()">Resume</button>
-   <button onclick="undo()">Undo</button>
-   <button onclick="redo()">Redo</button>
+  
+   
 
+   <div id="Players-History">
+    <div id="first-three-btn">
+        <button onclick="populateGrid()">Start</button>
+        <button onclick="pauseGame()">Pause</button>
+        <button onclick="resumeGame()">Resume</button>
+    </div>
+      <div id="Player-1-history">Player-1 History</div>
+      <div id="Player-2-history">Player-2 History</div>
+      <div id="last-three-btn">
+        <button onclick="undo()">Undo</button>
+        <button onclick="redo()">Redo</button>
+        <button onclick="reset()">Reset</button>
+      </div>
+   </div>
 </body>
 </html>

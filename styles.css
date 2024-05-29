@@ -139,3 +139,42 @@
    border-width: 15px;
    background-image: url(./assets/black-bullet.svg);
 }
+
+#Players-History{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;  
+    padding : 6px;
+    height: fit-content;
+    max-height:500px;
+}
+
+#Player-1-history{
+   flex-basis: 35%;
+   background-color: rgba(255, 0, 0, 0.5);
+   width: 50%;
+   
+}
+
+#Player-2-history{
+   flex-basis : 35%;
+   background-color: rgba(0, 0, 0, 0.5);
+   width: 50%;
+   color: beige;
+}
+
+#first-three-btn{
+    flex-basis: 15%;
+    padding-right: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+#last-three-btn{
+    flex-basis: 15%;
+    padding-left: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}

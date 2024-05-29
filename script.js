@@ -41,7 +41,6 @@ function pauseGame()
 function resumeGame()
 {
    gamestatus = true;
-   
 }
 
 function resetGame()
@@ -172,13 +171,13 @@ function lighten(selectedBoxes,i)
         child.classList.add('lighten');
          eventhandler = ()=>
         {   
-            selectedBoxClicked(i,val);
+            selectedBoxClicked(i,val,false);
         }
         child.addEventListener("click",eventhandler)
     })
 }
 
-function selectedBoxClicked(i,val)
+function selectedBoxClicked(i,val,fromWhere)
 {  if(gamestatus==false)
     {
         alert("game paused");
@@ -201,22 +200,31 @@ function selectedBoxClicked(i,val)
 
    if(boardStatus[val].indexOf("red")!=-1)
     {   console.log("hello");
+      if(fromWhere==false)
+        {
         player1timer(0);
         player2timer(1);
         changeChance();
         // can replace above two lines with gameChanceController
+        }
+        
         shootBullet("red");
     }
     else if(boardStatus[val].indexOf("black")!=-1)
     {   console.log("pamello")
-        player1timer(1);
-        player2timer(0);
-        changeChance();
+    if(fromWhere==false)
+        {
+            player1timer(1);
+            player2timer(0);
+            changeChance();
+        }
+        
         // can replace above two lines with gameChanceController
 
         shootBullet("black");
     }
    saveToStorage(i,val);
+   makeSound("piecemove");
    unlighten(selectedBoxes);
    selectedBoxes = [];
 } 
@@ -358,6 +366,7 @@ async function shootBullet(color)
     
     var box = document.getElementById('box-'+(index1+1));
     box.appendChild(svg);
+    makeSound("bulletshoot");
     var x = setInterval(function(){
         box.removeChild(svg);
         console.log("bullet fired")
@@ -374,6 +383,7 @@ async function shootBullet(color)
         index1 = index1+8;
         var box = document.getElementById('box-'+(index1+1));
         box.appendChild(svg);
+        makeSound("bulletshoot");
         var x = setInterval(function(){
             box.removeChild(svg);
             console.log("bullet fired")
@@ -398,21 +408,36 @@ function hittingObject(ObjectHit)
             winningLogic(ObjectHit);
         }
 }
-function winningLogic(ObjectHit)
+async function winningLogic(ObjectHit)
 {
    if(ObjectHit.indexOf("black")!=-1)
-    {
+    {   
+       await makeSound("gameover");
         alert("red won");
     }
     else
-    {
+    {   
+        makeSound("gameover");
         alert("black won");
     }
 }
-function makeSound()
-{
 
+
+function makeSound(sound)
+{
+const pieceMovingAudio = new Audio('./assets/audio/chess-piece-moving.mp3');
+const GameOverAudio = new  Audio('./assets/audio/game-over-31-179699.mp3');
+const shootBulletAudio = new Audio('./assets/audio/bullet-hit-metal-84818.mp3');
+const audio = {
+    "bulletshoot" : shootBulletAudio,
+    "gameover" : GameOverAudio,
+    "piecemove" : pieceMovingAudio
 }
+
+  audio[sound].play();
+  
+}
+
 function rotatePiece()
 {
 
@@ -444,29 +469,87 @@ function changeChance()
       }
 }
 var steps = 0;
+var revSteps = 0;
 function saveToStorage(index1,index2)
-{  var piece = boardStatus[index1];
+{  
+    var piece = boardStatus[index2].split('/')[2];
     steps++;
    var x1 = Math.floor((index1/8)+1);
    var y1 = Math.floor((index1%8)+1);
    var x2 = Math.floor((index2/8)+1);
    var y2 = Math.floor((index2%8)+1);
 
-   localStorage.setItem(steps,"("+x1+","+y1+") to ("+x2+","+y2+")");
-   console.log(piece.split('/')[2])  
+   localStorage.setItem(steps,piece+"/"+"("+x1+","+y1+") to ("+x2+","+y2+")");
+   displayStorage(piece,x1,y1,x2,y2,steps);
+   console.log(piece.split('.')[0])  
 }
+
 
 function undo()
 {
-   
+   var data = localStorage.getItem(steps).split('/')[1];
+   var piece = localStorage.getItem(steps).split('/')[0];
+   var x1 = +data[1]-1;
+   var y1 = +data[3]-1;
+   var x2 = +data[10]-1;
+   var y2 = +data[12]-1;
+   var index1 = 8*x1+y1;
+   var index2 = 8*x2+y2;
+   selectedBoxClicked(index2,index1,true); // true indicates that this function is being called from redo or undo
+   revSteps--;
+   localStorage.setItem(revSteps,piece+"/"+"("+(x1+1)+","+(y1+1)+") to ("+(x2+1)+","+(y2+1)+")");
+   localStorage.removeItem(--steps);
 }
 
 function redo()
 {
+    var data = localStorage.getItem(revSteps);
+    var x1 = +data[1]-1;
+    var y1 = +data[3]-1;
+    var x2 = +data[10]-1;
+    var y2 = +data[12]-1;
+    var index1 = 8*x1+y1;
+    var index2 = 8*x2+y2;
+    selectedBoxClicked(index1,index2,true); 
+    localStorage.removeItem(revSteps);
+    revSteps++;
+    
+}
+
+function displayStorage(piece,x1,y1,x2,y2,steps)
+{
+    piece = piece.split('.')[0];
+    var data = "("+(x1+1)+","+(y1+1)+") to ("+(x2+1)+","+(y2+1)+")";
+    if(piece.indexOf("red")!=-1)
+        {
+             const display = document.getElementById("Player-1-history");
+             const message = document.createElement("div");
+             message.setAttribute('id',"message-"+steps);
+             message.setAttribute('style','color:yellow');
+             message.innerHTML = piece + ":"+data;
+             display.appendChild(message);
+        }
+    else
+        {
+             const display = document.getElementById("Player-2-history");
+             const message = document.createElement("div");
+             message.setAttribute('id',"message-"+steps);
+             message.setAttribute('style','color:white');
+             message.innerHTML = piece + ":"+data;
+             display.appendChild(message);
+        }
+} 
+
+function ricochetSwap()
+{
 
 }
 
-function displayStorage()
+function directionalBulletShoot()
 {
-    
-} 
+
+}
+
+
+
+
