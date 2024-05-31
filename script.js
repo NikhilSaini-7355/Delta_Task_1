@@ -10,6 +10,9 @@
  var redSemiricochet = './assets/red-semiricochet.svg';
  var redTitan = './assets/red-titan.svg';
 
+//  var redBullet = {
+
+//  }
  var player1time = 30;
  var player2time = 30;
  var boardStatus = [
@@ -30,12 +33,12 @@ var i; var c;
 
 var direction = ["left","right","up","down"];
 var orientation = {
-    "redRicochet":"right",
-    "redSemiricochet":"right",
-    "redTank":"right",
-    "blackRicochet":"right",
-    "blackSemiricochet":"right",
-    "blackTank":"right"
+    "red-ricochet":"right",
+    "red-semiricochet":"right",
+    "red-tank":"right",
+    "black-ricochet":"right",
+    "black-semiricochet":"right",
+    "black-tank":"right"
 }
 function randomArrangement()
 {
@@ -61,7 +64,7 @@ function resetGame()
    populateGrid();
    localStorage.clear();
 }
-
+var svgEventListener = []
  function populateGrid()
 {   if(gamestatus==false)
     {
@@ -99,15 +102,19 @@ function resetGame()
             svg.setAttribute( 'width','80px');
             svg.setAttribute( 'height','80px');
             
-          
             svg.setAttribute('src',boardStatus[i-1]);
             svg.setAttribute('alt',i);
             svg.setAttribute('id',boardStatus[i-1].split("/")[2]);
             svg.setAttribute('style',' align-content: center; ');
-            // c = i-1;
-            svg.addEventListener('click',()=>{ move(svg.alt) } );
+            var eventhandlerForSvg = ()=>{
+               move(svg.alt);
+            }
+            svg.addEventListener('click',eventhandlerForSvg);
+            svgEventListener.push({
+                "id":boardStatus[i-1],
+                "eventListener" : eventhandlerForSvg
+            })
             child.appendChild(svg);
-            
         }
        
     player1timer(1);
@@ -227,6 +234,7 @@ function rotatePiecedown(index)
         alert("game paused");
         return;
     }
+    // if()
     i = +(i-1);
     if(!validate(i))
     {
@@ -235,39 +243,39 @@ function rotatePiecedown(index)
     
     unlighten(selectedBoxes)
     selectedBoxes = [];
-    // alert("hi");
+    
     console.log(i-8>=0 && boardStatus[i-8]=='' )
 
        if(i-8>=0 && boardStatus[i-8]=='')
-        {  //console.log("1");
+        {  
            selectedBoxes.push(i-8);
         }
         if(i-8-1>=0 && (i-8)%8!=0 && boardStatus[i-8-1]=='')
-        {    //console.log("2");
+        {    
             selectedBoxes.push(i-8-1);
         }
         if(i-8+1>=0 && (i-8+1)%8!=0 && boardStatus[i-8+1]=='')
-        {   // console.log("3");
+        {   
             selectedBoxes.push(i-8+1);
         }
         if(i-1>=0 && i%8!=0 && boardStatus[i-1]=='')
-            {  //  console.log("4");
+            {  
                 selectedBoxes.push(i-1);
             }
         if(i+8<=63 && boardStatus[i+8]=='')
-        {   // console.log("5");
+        {   
             selectedBoxes.push(i+8);
         }
         if(i+8-1<=63 && (i+8)%8!=0 && boardStatus[i+8-1]=='')
-        {   // console.log("6");
+        {   
             selectedBoxes.push(i+8-1);
         }
         if(i+8+1<=63 && (i+8+1)%8!=0 && boardStatus[i+8+1]=='')
-        {   // console.log("7");
+        {   
             selectedBoxes.push(i+8+1);
         }
         if(i+1<=63 && (i+1)%8!=0 && boardStatus[i+1]=='')
-            {   // console.log("8");
+            {   
                 selectedBoxes.push(i+1);
             }
             
@@ -284,18 +292,22 @@ function rotatePiecedown(index)
 
  }
 
- var eventhandler = ()=>{ };
+var selectedChildren = []
 function lighten(selectedBoxes,i)
 {   
     console.log(selectedBoxes);
-    selectedBoxes.map((val)=>{
+    selectedChildren = selectedBoxes.map((val)=>{
+        var eventhandler = ()=>
+            {   
+                selectedBoxClicked(i,val,false);
+            }
         const child = document.getElementById('box-'+(val+1));
         child.classList.add('lighten');
-         eventhandler = ()=>
-        {   
-            selectedBoxClicked(i,val,false);
-        }
-        child.addEventListener("click",eventhandler)
+        child.addEventListener("click",eventhandler);
+            return {
+                "child":child,
+                "eventhandler":eventhandler
+            }
     })
 }
 
@@ -340,9 +352,6 @@ function selectedBoxClicked(i,val,fromWhere)
             player2timer(0);
             changeChance();
         }
-        
-        // can replace above two lines with gameChanceController
-
         shootBullet("black");
     }
    saveToStorage(i,val,"moved");
@@ -352,11 +361,12 @@ function selectedBoxClicked(i,val,fromWhere)
 } 
 function unlighten(selectedBoxes)
 {   
-    selectedBoxes.map((val)=>{
-        const child = document.getElementById('box-'+(val+1));
+    selectedChildren.map((val)=>{
+        const child = val["child"];
         child.classList.remove('lighten');
-        child.removeEventListener("click",eventhandler)
+        child.removeEventListener("click",val["eventhandler"])
     })
+    selectedChildren = [] ; // feel the power of Javascript Objects
     selectedBoxes = [];
     unlightenSwap(selectedBoxesforSwap);
 }
@@ -457,6 +467,10 @@ function calculateDifferenceForCanon(color)
             {
                 index2 = index2 - 8;
             }
+            if(index2<0)
+                {
+                    index2 = index2 + 8;
+                }
             ObjectHit = boardStatus[index2];
             diff = (index1-index2)/8;
     }
@@ -468,6 +482,10 @@ function calculateDifferenceForCanon(color)
                {
                    index2 = index2 + 8;
                }
+               if(index2>63)
+                {
+                    index2 = index2 - 8;
+                }
                ObjectHit = boardStatus[index2];
                diff = (index2 - index1)/8;
         }
@@ -476,6 +494,7 @@ function calculateDifferenceForCanon(color)
 async function shootBullet(color)
 {
    var [index1,index2,diff,ObjectHit] = calculateDifferenceForCanon(color);
+   console.log("the values are"+index1+"  "+index2)
    var bullet = (color=="red")?('./assets/red-bullet.svg'):('./assets/black-bullet.svg');
    const svg = document.createElement("img");
    svg.setAttribute( 'width','80px');
@@ -490,7 +509,7 @@ async function shootBullet(color)
     box.appendChild(svg);
     makeSound("bulletshoot");
     var x = setInterval(function(){
-        box.removeChild(svg);
+         box.removeChild(svg);
         console.log("bullet fired")
         index1 = index1-8;
         if(index1<index2)
@@ -499,7 +518,9 @@ async function shootBullet(color)
             }
       box = document.getElementById('box-'+(index1+1));
       box.appendChild(svg);
+      svg.setAttribute('style','transform: translateY(80px);')
     },250)
+   // box.removeChild(svg);
     }
     else{
         index1 = index1+8;
@@ -512,11 +533,14 @@ async function shootBullet(color)
             index1 = index1+8;
             if(index1>index2)
                 {  hittingObject(ObjectHit);
+                    console.log("came out")
                    clearInterval(x);
                 }
           box = document.getElementById('box-'+(index1+1));
+          
           box.appendChild(svg);
         },250)
+
     }
     
 }
@@ -698,7 +722,7 @@ function displayStorage(piece,x1,y1,x2,y2,steps)
 var selectedBoxesforSwap = [];
 function ricochetSwapOption(index)
 {
-   unlightenSwap(selectedBoxesforSwap);
+   //unlightenSwap(selectedBoxesforSwap);
    selectedBoxesforSwap = [];
    if(index-8>=0 && boardStatus[index-8]!='' && boardStatus[index-8].indexOf("titan")==-1)
         {  
@@ -732,35 +756,77 @@ function ricochetSwapOption(index)
             {    
                 selectedBoxesforSwap.push(index+1);
             }
-
+    removeSvgMove(selectedBoxesforSwap);
     lightenSwap(index);
 }
 
-var eventhandlerSwap = ()=>{ };
+function removeSvgMove(selectedBoxesforSwap)
+{
+  var selectedSvg = svgEventListener.filter((val)=>{
+      const index = boardStatus.indexOf(val["id"]);
+      if(selectedBoxesforSwap.indexOf(index)!=-1)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+   })
+   selectedSvg.map((val)=>{
+     const svg = document.getElementById(val["id"].split("/")[2]);
+     svg.removeEventListener("click",val["eventListener"]);
+   })
+}
+
+function addSvgMove(selectedBoxesforSwap)
+{
+   var selectedSvg = svgEventListener.filter((val)=>{
+      const index = boardStatus.indexOf(val["id"]);
+      if(selectedBoxesforSwap.indexOf(index)!=-1)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+   })
+   selectedSvg.map((val)=>{
+     const svg = document.getElementById(val["id"].split("/")[2]);
+     svg.addEventListener("click",val["eventListener"]);
+   })
+}
+var selectedChildrenForSwap = []
 function lightenSwap(index)
 {
     console.log(selectedBoxesforSwap);
-    selectedBoxesforSwap.map((val)=>{
+    selectedChildrenForSwap = selectedBoxesforSwap.map((val)=>{
         const child = document.getElementById('box-'+(val+1));
         child.classList.add('lightenSwap');
-         eventhandlerSwap = ()=>
+        var eventhandlerSwap = ()=>
         {   
             doRicochetSwap(index,val,false);
         }
-        child.addEventListener("click",eventhandlerSwap)
+        child.addEventListener("click",eventhandlerSwap);
+        return{
+            "child":child,
+            "eventListener":eventhandlerSwap
+        }
     })
 
 }
-function doRicochetSwap(index,val,status)
+function doRicochetSwap(index,val,fromWhere)
 {
     if(gamestatus==false)
         {
             alert("game paused");
             return;
         }
-
+       addSvgMove(selectedBoxesforSwap);
        console.log("swapped");
        console.log(index+"  "+val); // working
+       
        const child1 = document.getElementById('box-'+(index+1))
        const child2 = document.getElementById('box-'+(val+1))
        const svg1 = document.getElementById(boardStatus[index].split("/")[2]);
@@ -781,7 +847,7 @@ function doRicochetSwap(index,val,status)
        
        child1.appendChild(svg2);
        child2.appendChild(svg1);
-
+        
        if(boardStatus[val].indexOf("red")!=-1)
         {   console.log("hello");
           if(fromWhere==false)
@@ -801,28 +867,36 @@ function doRicochetSwap(index,val,status)
                 player1timer(1);
                 player2timer(0);
                 changeChance();
-            }
-            
+            } 
             // can replace above two lines with gameChanceController
-    
             shootBullet("black");
         }
        saveToStorage(index,val,"swap");
        makeSound("piecemove");
+       unlighten(selectedBoxes);
+       selectedBoxes = []
        unlightenSwap(selectedBoxesforSwap);
        selectedBoxesforSwap = [];
-       
 } 
 function unlightenSwap()
 {
-    selectedBoxesforSwap.map((val)=>{
-        const child = document.getElementById('box-'+(val+1));
+    selectedChildrenForSwap.map((val)=>{
+        const child = val["child"];
         child.classList.remove('lightenSwap');
-        child.removeEventListener("click",eventhandlerSwap)
+        child.removeEventListener("click",val["eventListener"]);
     })
     selectedBoxesforSwap = [];
+    selectedChildrenForSwap = []
 }
 
+function removedirectionalBulletShootOption()
+{
+
+}
+function directionalBulletShootOption()
+{
+
+}
 function directionalBulletShoot()
 {
 
