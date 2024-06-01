@@ -36,10 +36,12 @@ var direction = ["left","right","up","down"];
 var orientationPawn = {
     "red-ricochet":"right",
     "red-semiricochet":"right",
-    "red-tank":"right",
+   // "red-tank":"right",
+    "canon-red":"up",
     "black-ricochet":"right",
     "black-semiricochet":"right",
-    "black-tank":"right"
+  //  "black-tank":"right",
+    "canon-black":"down"
 }
 function randomArrangement()
 {   boardStatus[boardStatus.indexOf(redCanon)] = '';
@@ -361,6 +363,10 @@ function rotatePiecedown(index)
         {
             rotateOptionsForRicoAndSemirico(i);
         }
+    if(isCanon)
+        {
+            directionalBulletShootOption(i);
+        }
     lighten(selectedBoxes,i);
     //unlighten(selectedBoxes);   // focus required 
 
@@ -534,12 +540,158 @@ function player2timer(status)
         }
 
 }
+    // var bullet = (color=="red")?('./assets/red-bullet.svg'):('./assets/black-bullet.svg');
 
-function calculateDifferenceForCanon(color)
-{  var diff ; var index1; var index2; var ObjectHit = '';
-   if(color == "red")
+    var bullet_red = './assets/red-bullet.svg';
+    const red_bullet = document.createElement("img");
+    red_bullet.setAttribute( 'width','80px');
+    red_bullet.setAttribute( 'height','80px');
+    red_bullet.setAttribute('src',bullet_red);
+    red_bullet.setAttribute('style',' align-content: center; ');
+
+    var bullet_black = './assets/black-bullet.svg';
+    const black_bullet = document.createElement("img");
+    black_bullet.setAttribute( 'width','80px');
+    black_bullet.setAttribute( 'height','80px');
+    black_bullet.setAttribute('src',bullet_black);
+    black_bullet.setAttribute('style',' align-content: center; ');
+
+// Needs improvement
+function moveBullet(index1,color,diff,direction)
+{
+    console.log("the values are "+index1+"  "+color+"  "+diff+"  "+direction);
+    
+    // if(color=="red")
+    //  {
+    //      index1 = index1-8;
+     
+    //  var box = document.getElementById('box-'+(index1+1));
+    //  box.appendChild(svg);
+    //  
+    //  var x = setInterval(function(){
+    //       box.removeChild(svg);
+    //      console.log("bullet fired")
+    //      index1 = index1-8;
+    //      if(index1<index2)
+    //          {  hittingObject(ObjectHit);
+    //             clearInterval(x);
+    //          }
+    //    box = document.getElementById('box-'+(index1+1));
+    //    box.appendChild(svg);
+    //    svg.setAttribute('style','transform: translateY(80px);')
+    //  },250)
+    // // box.removeChild(svg);
+    //  }
+    //  else{
+    //      index1 = index1+8;
+    //      var box = document.getElementById('box-'+(index1+1));
+    //      box.appendChild(svg);
+    //      makeSound("bulletshoot");
+    //      var x = setInterval(function(){
+    //          box.removeChild(svg);
+    //          console.log("bullet fired")
+    //          index1 = index1+8;
+    //          if(index1>index2)
+    //              {  hittingObject(ObjectHit);
+    //                  console.log("came out")
+    //                 clearInterval(x);
+    //              }
+    //        box = document.getElementById('box-'+(index1+1));
+           
+    //        box.appendChild(svg);
+    //      },250)
+ 
+    //  }
+    var bullet = (color=="red")?(red_bullet):(black_bullet);
+    var box = document.getElementById('box-'+(index1+1));
+    box.appendChild(bullet);
+    var moveMagnitude = 80*diff;
+    if(direction=="up")
     {
-          index1 = boardStatus.indexOf(redCanon);
+        bullet.setAttribute("style",' align-content: center; transform : translateY('+moveMagnitude+'px);');
+    }
+    else if(direction=="down")
+    {
+        bullet.setAttribute("style",' align-content: center; transform : translateY('+(-1*moveMagnitude)+'px);');
+    }
+    else if(direction=="right")
+    {
+        bullet.setAttribute("style",' align-content: center; transform : translateX('+moveMagnitude+'px);');
+    }
+    else if(direction=="left")
+    {
+        bullet.setAttribute("style",' align-content: center; transform : translateX('+(-1*moveMagnitude)+'px);');
+    }
+}
+// think about condition of non hitting anything also
+function calculateLeftBulletDifference(index1,color,direction)
+{    var diff; var index2; var ObjectHit;
+     if(index1%8==0)
+    {
+        diff = 0;
+    }
+    else
+    {  
+        index2 = index1-1;
+         while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2] == redCanon ) && (index2+1)%8==0)
+            {
+                index2 = index2 - 1;
+            }
+            if((index2+1)%8==0)
+                {
+                    index2 = index2 + 1;
+                    ObjectHit = null;
+                }
+                else
+                {
+                    ObjectHit = boardStatus[index2];
+                }
+            diff = (index1-index2);
+    }
+    moveBullet(index1,color,diff,direction);
+    hittingObject(ObjectHit);
+}
+
+function calculateRightBulletDifference(index1,color,direction )
+{
+    var diff; var index2; var ObjectHit;
+    if((index1+1)%8==0)
+   {
+       diff = 0;
+   }
+   else
+   {
+       index2 = index1+1;
+        while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2] == redCanon ) && index2%8!=0)
+           {
+               index2 = index2 + 1;
+           }
+           if(index2%8==0)
+               {
+                   index2 = index2 - 1;
+                   ObjectHit = null;
+
+               }
+               else
+               {
+                ObjectHit = boardStatus[index2];
+               }  
+           diff = (index2-index1);
+   }
+   moveBullet(index1,color,diff,direction);
+   hittingObject(ObjectHit);
+}
+
+function calculateVerticalDifferenceForCanon(index1,color,direction)
+{  var diff ; // var index1;
+   // please check - removing the outermost condition 
+   // if bullet hits canon what to do
+     var index2; var ObjectHit = '';
+   if(color == "red")
+    {     if(direction=="up")
+        {
+
+          // index1 = boardStatus.indexOf(redCanon);
           index2 = index1-8;
          while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon ) && index2>=0)
             {
@@ -551,10 +703,17 @@ function calculateDifferenceForCanon(color)
                 }
             ObjectHit = boardStatus[index2];
             diff = (index1-index2)/8;
-    }
-    else if(color == "black")
-        {
-             index1 = boardStatus.indexOf(blackCanon);
+        }
+        else if(direction=="right")
+            {
+                calculateRightBulletDifference(index1,color,direction )
+            }
+        else if(direction=="left")
+            {
+                calculateLeftBulletDifference(index1,color,direction);
+            }
+        else if(direction=="down")
+            {
              index2 = index1+8;
             while((boardStatus[index2]==''|| boardStatus[index2]==redCanon) && index2<=63)
                {
@@ -566,61 +725,117 @@ function calculateDifferenceForCanon(color)
                 }
                ObjectHit = boardStatus[index2];
                diff = (index2 - index1)/8;
+            }
+    }
+    else if(color == "black")
+        {    
+            if(direction=="down")
+            {
+            // index1 = boardStatus.indexOf(blackCanon);
+             index2 = index1+8;
+            while((boardStatus[index2]==''|| boardStatus[index2]==redCanon) && index2<=63)
+               {
+                   index2 = index2 + 8;
+               }
+               if(index2>63)
+                {
+                    index2 = index2 - 8;
+                    ObjectHit = null;
+                }
+                else
+                {
+                    ObjectHit = boardStatus[index2];
+                }
+               diff = (index2 - index1)/8;
+            }
+            else if(direction=="right")
+                {
+                    calculateRightBulletDifference(index1,color,direction );
+                }
+            else if(direction=="left")
+                {
+                    calculateLeftBulletDifference(index1,color,direction);
+                }
+            else if(direction=="up")
+                {
+                  index2 = index1-8;
+                 while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon ) && index2>=0)
+                    {
+                        index2 = index2 - 8;
+                    }
+                    if(index2<0)
+                        {
+                            index2 = index2 + 8;
+                            ObjectHit = null;
+                        }
+                        else
+                        {
+                            ObjectHit = boardStatus[index2];
+                        }
+                    diff = (index1-index2)/8;
+                }
         }
-        return [index1,index2,diff,ObjectHit];
+        // return [index1,index2,diff,ObjectHit];
+        moveBullet(index1,color,diff,direction);
+        hittingObject(ObjectHit);
 }
 async function shootBullet(color)
-{
-   var [index1,index2,diff,ObjectHit] = calculateDifferenceForCanon(color);
-   console.log("the values are"+index1+"  "+index2)
-   var bullet = (color=="red")?('./assets/red-bullet.svg'):('./assets/black-bullet.svg');
-   const svg = document.createElement("img");
-   svg.setAttribute( 'width','80px');
-   svg.setAttribute( 'height','80px');
-   svg.setAttribute('src',bullet);
-   svg.setAttribute('style',' align-content: center; ');
-   if(color=="red")
-    {
-        index1 = index1-8;
+{  var canon = (color=="red")?redCanon:blackCanon;
+   makeSound("bulletshoot");
+   var index = boardStatus.indexOf(canon);
+   var direction = orientationPawn[canon.split('/')[2].split('.')[0]];
+   console.log("bullet fired")
+   console.log(index+"   "+color+"   "+direction);
+   //var [index1,index2,diff,ObjectHit] = calculateVericalDifferenceForCanon(index,color,direction);
+   calculateVerticalDifferenceForCanon(index,color,direction);
+//    console.log("the values are"+index1+"  "+index2)
+//    var bullet = (color=="red")?('./assets/red-bullet.svg'):('./assets/black-bullet.svg');
+//    const svg = document.createElement("img");
+//    svg.setAttribute( 'width','80px');
+//    svg.setAttribute( 'height','80px');
+//    svg.setAttribute('src',bullet);
+//    svg.setAttribute('style',' align-content: center; ');
+//    if(color=="red")
+//     {
+//         index1 = index1-8;
     
-    var box = document.getElementById('box-'+(index1+1));
-    box.appendChild(svg);
-    makeSound("bulletshoot");
-    var x = setInterval(function(){
-         box.removeChild(svg);
-        console.log("bullet fired")
-        index1 = index1-8;
-        if(index1<index2)
-            {  hittingObject(ObjectHit);
-               clearInterval(x);
-            }
-      box = document.getElementById('box-'+(index1+1));
-      box.appendChild(svg);
-      svg.setAttribute('style','transform: translateY(80px);')
-    },250)
-   // box.removeChild(svg);
-    }
-    else{
-        index1 = index1+8;
-        var box = document.getElementById('box-'+(index1+1));
-        box.appendChild(svg);
-        makeSound("bulletshoot");
-        var x = setInterval(function(){
-            box.removeChild(svg);
-            console.log("bullet fired")
-            index1 = index1+8;
-            if(index1>index2)
-                {  hittingObject(ObjectHit);
-                    console.log("came out")
-                   clearInterval(x);
-                }
-          box = document.getElementById('box-'+(index1+1));
+//     var box = document.getElementById('box-'+(index1+1));
+//     box.appendChild(svg);
+//     makeSound("bulletshoot");
+//     var x = setInterval(function(){
+//          box.removeChild(svg);
+//         console.log("bullet fired")
+//         index1 = index1-8;
+//         if(index1<index2)
+//             {  hittingObject(ObjectHit);
+//                clearInterval(x);
+//             }
+//       box = document.getElementById('box-'+(index1+1));
+//       box.appendChild(svg);
+//       svg.setAttribute('style','transform: translateY(80px);')
+//     },250)
+//    // box.removeChild(svg);
+//     }
+//     else{
+//         index1 = index1+8;
+//         var box = document.getElementById('box-'+(index1+1));
+//         box.appendChild(svg);
+//         makeSound("bulletshoot");
+//         var x = setInterval(function(){
+//             box.removeChild(svg);
+//             console.log("bullet fired")
+//             index1 = index1+8;
+//             if(index1>index2)
+//                 {  hittingObject(ObjectHit);
+//                     console.log("came out")
+//                    clearInterval(x);
+//                 }
+//           box = document.getElementById('box-'+(index1+1));
           
-          box.appendChild(svg);
-        },250)
+//           box.appendChild(svg);
+//         },250)
 
-    }
-    
+//     }
 }
 
 function hittingObject(ObjectHit)
@@ -633,22 +848,26 @@ function hittingObject(ObjectHit)
         }
     else if(ObjectHit.indexOf("tank")!=-1)
         {
-            //ObjectHitTank();
+            ObjectHitTank();
         }
     else if(ObjectHit.indexOf("ricochet")!=-1)
         {
-            //ObjectHitRicochet();
+            ObjectHitRicochet();
         }
     else if(ObjectHit.indexOf("semiricochet")!=-1)
         {
-            //ObjectHitSemiRicochet();
+            ObjectHitSemiRicochet();
+        }
+    else if(ObjectHit == null)
+        {
+            ObjectHitNothing();
         }
 }
-async function winningLogic(ObjectHit)
+   function winningLogic(ObjectHit)
 {
    if(ObjectHit.indexOf("black")!=-1)
     {   
-       await makeSound("gameover");
+        makeSound("gameover");
         alert("red won");
     }
     else
@@ -741,7 +960,7 @@ function saveToStorage(index1,index2,action)
    
 }
 
-
+// from,to,rotated array
 function undo()
 {
    var data = localStorage.getItem(steps).split('/')[1];
@@ -969,17 +1188,114 @@ function unlightenSwap()
     selectedChildrenForSwap = []
 }
 
-function removedirectionalBulletShootOption()
-{
-
+function rotateCanon(index,CanonDirection)
+{   const canon = document.getElementById(boardStatus[index].split("/")[2]);
+    //canon.setAttribute('style',"align-content: center; transform : rotate(-90deg);");
+    var canonName = boardStatus[index].split("/")[2].split('.')[0];
+    if(boardStatus[index].indexOf("red")!=-1)
+        {
+           if(CanonDirection=="up")
+            {
+                canon.classList.remove("rotateRight");
+                canon.classList.remove("rotateLeft");
+                orientationPawn[canonName] = "up";
+            }
+            else if(CanonDirection == "right")
+            {
+                canon.classList.add("rotateRight");
+                canon.classList.remove("rotateLeft");
+                orientationPawn[canonName] = "right";
+            }
+            else if(CanonDirection == "left")
+            {
+                canon.classList.remove("rotateRight");
+                canon.classList.add("rotateLeft");
+                orientationPawn[canonName] = "left";
+            }
+        }
+        else
+        {
+            if(CanonDirection=="down")
+                {
+                    canon.classList.remove("rotateRight");
+                    canon.classList.remove("rotateLeft");
+                    orientationPawn[canonName] = "down";
+                }
+                else if(CanonDirection == "right")
+                {
+                    canon.classList.add("rotateRight");
+                    canon.classList.remove("rotateLeft");
+                    orientationPawn[canonName] = "right";
+                }
+                else if(CanonDirection == "left")
+                {
+                    canon.classList.remove("rotateRight");
+                    canon.classList.add("rotateLeft");
+                    orientationPawn[canonName] = "left";
+                }
+        }
+   unlighten(selectedBoxes);
+   changeChance();
+   removedirectionalBulletShootOption(index);
 }
-function directionalBulletShootOption()
+// hamburger menu for some stuffs 
+function removedirectionalBulletShootOption(index)
 {
-
+    const playerNo = (boardStatus[index].indexOf("red")!=-1)?1:2;
+    const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
+    const childDiv  = document.getElementById("rotateDivCanon");
+    const message = document.getElementById("rotateCanonMessage");
+    console.log(parentDiv);
+    console.log(childDiv);
+    console.log(message);
+    parentDiv.removeChild(childDiv);
+    parentDiv.removeChild(message);
 }
-function directionalBulletShoot()
+function directionalBulletShootOption(index)
 {
+    const playerNo = (boardStatus[index].indexOf("red")!=-1)?1:2;
+    const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
+    const childDiv  = document.createElement("div");
+    childDiv.setAttribute("id","rotateDivCanon");
+    childDiv.classList.add("rotateDivCanon");
 
+    const up = document.createElement("button");
+    const down = document.createElement("button");
+    const right = document.createElement("button");
+    const left = document.createElement("button");
+            
+    up.innerHTML = "up";
+    down.innerHTML = "down";
+    right.innerHTML = "right";
+    left.innerHTML = "left";
+    up.addEventListener("click",()=>{rotateCanon(index,"up")} );
+    down.addEventListener("click",()=>{rotateCanon(index,"down")} );
+    right.addEventListener("click",()=>{rotateCanon(index,"right")} );
+    left.addEventListener("click",()=>{rotateCanon(index,"left")} );
+
+    if(boardStatus[index].indexOf("red")!=-1)
+        {
+            childDiv.appendChild(up);
+            childDiv.appendChild(left);
+            childDiv.appendChild(right);
+        }
+    else
+    {   childDiv.appendChild(down);
+        childDiv.appendChild(left);
+        childDiv.appendChild(right);
+    }
+    const message = document.createElement("div");
+    message.setAttribute("id","rotateCanonMessage");
+    message.innerHTML = (boardStatus[index].split("/")[2]).split(".")[0];
+    if(parentDiv.childElementCount==2)
+        {
+           parentDiv.appendChild(message);
+           parentDiv.appendChild(childDiv);
+        }
+}
+function directionalBulletShoot(color)
+{
+   
 }
 
 function destroySemiricochet()
@@ -991,6 +1307,9 @@ function destroySemiricochet()
 // swap and rotate logic in undo redo replay etc also
 
 // Third level 
+
+// a function which is able to take the orders of game replay and single_player_mode and take the necessary actions itself
+
 function game_replay()
 {
 
@@ -998,7 +1317,7 @@ function game_replay()
 
 function single_player_mode()
 {
-
+   // randomly choosing among all the possible moves possible 
 }
 
 function spells()
