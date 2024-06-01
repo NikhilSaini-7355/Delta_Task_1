@@ -144,15 +144,16 @@
     flex-direction: row;
     justify-content: space-around;  
     padding : 6px;
-    height: fit-content;
-    max-height:500px;
+    /* height: fit-content; */
+    height:200px;
 }
 
 #Player-1-history{
    flex-basis: 35%;
    background-color: rgba(255, 0, 0, 0.5);
    width: 50%;
-   
+   overflow-x: hidden;
+   overflow-y: auto;
 }
 
 #Player-2-history{
@@ -160,6 +161,8 @@
    background-color: rgba(0, 0, 0, 0.5);
    width: 50%;
    color: beige;
+   overflow-x: hidden;
+   overflow-y: auto;
 }
 
 #first-three-btn{
@@ -186,5 +189,20 @@ border-style: solid;
 
 .rotateDiv{
    background-color: rgba(255, 255, 0, 0.5);
-   
+}
+
+.rotateRight{
+    transform : rotate(90deg);
+}
+
+.rotateLeft{
+    transform : rotate(-90deg);
+}
+
+.rotateUp{
+    transform : rotate(-180deg);
+}
+
+.rotateDown{
+    transform : rotate(180deg);
 }

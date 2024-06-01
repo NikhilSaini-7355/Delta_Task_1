@@ -23,7 +23,7 @@
                    '','','','','','','','',
                    '','','','','','','','',
                    '','','','','','','','',
-                   '','','',redCanon,redTank,redRicochet,redSemiricochet,redTitan ]
+                   '','','',redTitan,redTank,redRicochet,redSemiricochet,redCanon ]
 
 var selectedBoxes = [];
 var gamestatus = true;
@@ -32,7 +32,8 @@ var gameChance = "red";
 var i; var c;
 
 var direction = ["left","right","up","down"];
-var orientation = {
+// default orientation is taken to be right 
+var orientationPawn = {
     "red-ricochet":"right",
     "red-semiricochet":"right",
     "red-tank":"right",
@@ -41,8 +42,43 @@ var orientation = {
     "black-tank":"right"
 }
 function randomArrangement()
-{
-
+{   boardStatus[boardStatus.indexOf(redCanon)] = '';
+    boardStatus[boardStatus.indexOf(blackCanon)] = '';
+    for (let i = boardStatus.length - 2; i > 1; i--) {
+        const j = Math.floor(Math.random() * (i + 2));
+        [boardStatus[i], boardStatus[j]] = [boardStatus[j], boardStatus[i]]; // Swap elements
+    }
+    console.log(boardStatus);
+    var upperRow = [];
+    var LowerRow = [];
+    for(let i=0;i<=7;i++)
+        {
+            if(boardStatus[i]=='')
+                {
+                   upperRow.push(i);
+                }
+        }
+    for(let i=56;i<=63;i++)
+        {
+            if(boardStatus[i]=='')
+                {
+                   LowerRow.push(i);
+                }
+        }
+    console.log(upperRow);
+    console.log(LowerRow);
+    for (let i = upperRow.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [upperRow[i], upperRow[j]] = [upperRow[j], upperRow[i]]; // Swap elements
+        }
+    for (let i = LowerRow.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [LowerRow[i], LowerRow[j]] = [LowerRow[j], LowerRow[i]]; // Swap elements
+        }
+        console.log(upperRow);
+    console.log(LowerRow);
+    boardStatus[upperRow[0]] = blackCanon;
+    boardStatus[LowerRow[0]] = redCanon;
 }
 
 function pauseGame()
@@ -56,15 +92,28 @@ function resumeGame()
 }
 
 function resetGame()
-{
+{  
    gamestatus = true;
    randomArrangement();
    player1time = 30;
    player2time = 30;
+   player1timer(0);
+   player1timer(0);
+   unpopulateGrid();
    populateGrid();
    localStorage.clear();
 }
+
+function unpopulateGrid()
+{
+    const parent = document.getElementById('grid-Container');
+    for(let i=1;i<=64;i++)
+        {
+            parent.removeChild(document.getElementById('box-'+i));
+        }
+}
 var svgEventListener = []
+var parent;
  function populateGrid()
 {   if(gamestatus==false)
     {
@@ -72,7 +121,7 @@ var svgEventListener = []
         return;
     }
 
-    const parent = document.getElementById('grid-Container');
+    parent = document.getElementById('grid-Container');
     var h = 0;
     var c = 0;
     for( i=1;i<=64;i++)
@@ -146,12 +195,14 @@ function removerotateOptionsForRicoAndSemirico(index)
     const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
     const childDiv  = document.getElementById("rotateDivRicoSemiRico");
     const message = document.getElementById("rotateMessage");
+    console.log(parentDiv);
+    console.log(childDiv);
+    console.log(message);
     parentDiv.removeChild(childDiv);
     parentDiv.removeChild(message);
-
 }
 function rotateOptionsForRicoAndSemirico(index)
-{
+{   
     const playerNo = (boardStatus[index].indexOf("red")!=-1)?1:2;
     const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
     const childDiv  = document.createElement("div");
@@ -187,32 +238,50 @@ function rotateOptionsForRicoAndSemirico(index)
     const message = document.createElement("div");
     message.setAttribute("id","rotateMessage");
     message.innerHTML = (boardStatus[index].split("/")[2]).split(".")[0];
-    parentDiv.appendChild(message);
-    parentDiv.appendChild(childDiv);
-
+    if(parentDiv.childElementCount==2)
+        {
+           parentDiv.appendChild(message);
+           parentDiv.appendChild(childDiv);
+        }
 }
 function rotatePieceleft(index)
-{
+{  console.log("left rotated")
    const piece = document.getElementById(boardStatus[index].split("/")[2]);
-   piece.setAttribute('style',"align-content: center; transform : rotate(-90deg);");
+   //piece.setAttribute('style',"align-content: center; transform : rotate(-90deg);");
+   piece.classList.add("rotateLeft");
+   piece.classList.remove("rotateUp");
+   piece.classList.remove("rotateDown");
+   var pieceName = boardStatus[index].split("/")[2].split('.')[0];
+   orientationPawn[pieceName] = "left";
    unlighten(selectedBoxes);
    changeChance();
    removerotateOptionsForRicoAndSemirico(index);
 }
 
 function rotatePieceright(index)
-{
+{   console.log("right rotated")
     const piece = document.getElementById(boardStatus[index].split("/")[2]);
-   piece.setAttribute('style',"align-content: center; transform : rotate(90deg);");
+   //piece.setAttribute('style',"align-content: center; transform : rotate(90deg);");
+   piece.classList.remove("rotateLeft");
+   piece.classList.remove("rotateUp");
+   piece.classList.remove("rotateDown");
+   var pieceName = boardStatus[index].split("/")[2].split('.')[0];
+   orientationPawn[pieceName] = "right";
    unlighten(selectedBoxes);
    changeChance();
    removerotateOptionsForRicoAndSemirico(index);
 }
 
+// rotation and bullet firing undo redo storage
 function rotatePieceup(index)
 {
     const piece = document.getElementById(boardStatus[index].split("/")[2]);
-   piece.setAttribute('style',"align-content: center; transform : rotate(-180deg);");
+   //piece.setAttribute('style',"align-content: center; transform : rotate(-180deg);");
+   piece.classList.add("rotateUp");
+   piece.classList.remove("rotateLeft");
+   piece.classList.remove("rotateDown");
+   var pieceName = boardStatus[index].split("/")[2].split('.')[0];
+   orientationPawn[pieceName] = "up";
    unlighten(selectedBoxes);
    changeChance();
    removerotateOptionsForRicoAndSemirico(index);
@@ -221,7 +290,12 @@ function rotatePieceup(index)
 function rotatePiecedown(index)
 {
     const piece = document.getElementById(boardStatus[index].split("/")[2]);
-   piece.setAttribute('style',"align-content: center; transform : rotate(180deg);");
+   //piece.setAttribute('style',"align-content: center; transform : rotate(180deg);");
+   piece.classList.add("rotateDown");
+   piece.classList.remove("rotateUp");
+   piece.classList.remove("rotateLeft");
+   var pieceName = boardStatus[index].split("/")[2].split('.')[0];
+   orientationPawn[pieceName] = "down";
    unlighten(selectedBoxes);
    changeChance();
    removerotateOptionsForRicoAndSemirico(index);
@@ -243,34 +317,34 @@ function rotatePiecedown(index)
     
     unlighten(selectedBoxes)
     selectedBoxes = [];
-    
-    console.log(i-8>=0 && boardStatus[i-8]=='' )
+    const isCanon = (boardStatus[i]==blackCanon || boardStatus[i]==redCanon)
+    console.log(i-8>=0 && boardStatus[i-8]==''  )
 
-       if(i-8>=0 && boardStatus[i-8]=='')
+       if(i-8>=0 && boardStatus[i-8]=='' && (!isCanon) )
         {  
            selectedBoxes.push(i-8);
         }
-        if(i-8-1>=0 && (i-8)%8!=0 && boardStatus[i-8-1]=='')
+        if(i-8-1>=0 && (i-8)%8!=0 && boardStatus[i-8-1]=='' && (!isCanon) )
         {    
             selectedBoxes.push(i-8-1);
         }
-        if(i-8+1>=0 && (i-8+1)%8!=0 && boardStatus[i-8+1]=='')
+        if(i-8+1>=0 && (i-8+1)%8!=0 && boardStatus[i-8+1]=='' && (!isCanon) )
         {   
             selectedBoxes.push(i-8+1);
         }
-        if(i-1>=0 && i%8!=0 && boardStatus[i-1]=='')
+        if(i-1>=0 && i%8!=0 && boardStatus[i-1]=='' )
             {  
                 selectedBoxes.push(i-1);
             }
-        if(i+8<=63 && boardStatus[i+8]=='')
+        if(i+8<=63 && boardStatus[i+8]=='' && (!isCanon) )
         {   
             selectedBoxes.push(i+8);
         }
-        if(i+8-1<=63 && (i+8)%8!=0 && boardStatus[i+8-1]=='')
+        if(i+8-1<=63 && (i+8)%8!=0 && boardStatus[i+8-1]=='' && (!isCanon) )
         {   
             selectedBoxes.push(i+8-1);
         }
-        if(i+8+1<=63 && (i+8+1)%8!=0 && boardStatus[i+8+1]=='')
+        if(i+8+1<=63 && (i+8+1)%8!=0 && boardStatus[i+8+1]=='' && (!isCanon) )
         {   
             selectedBoxes.push(i+8+1);
         }
@@ -323,6 +397,10 @@ function selectedBoxClicked(i,val,fromWhere)
    const child1 = document.getElementById('box-'+(i+1))
    const child2 = document.getElementById('box-'+(val+1))
    const svg = document.getElementById(boardStatus[i].split("/")[2])
+   if(boardStatus[i].split("/")[2].indexOf("ricochet")!=-1)
+    {
+        removerotateOptionsForRicoAndSemirico(i);
+    }
    var temp = boardStatus[i];
    boardStatus[i] = boardStatus[val];
    boardStatus[val] = temp;
@@ -814,7 +892,7 @@ function lightenSwap(index)
             "eventListener":eventhandlerSwap
         }
     })
-
+   
 }
 function doRicochetSwap(index,val,fromWhere)
 {
@@ -877,6 +955,7 @@ function doRicochetSwap(index,val,fromWhere)
        selectedBoxes = []
        unlightenSwap(selectedBoxesforSwap);
        selectedBoxesforSwap = [];
+       removerotateOptionsForRicoAndSemirico(index);
 } 
 function unlightenSwap()
 {
@@ -884,7 +963,8 @@ function unlightenSwap()
         const child = val["child"];
         child.classList.remove('lightenSwap');
         child.removeEventListener("click",val["eventListener"]);
-    })
+    });
+    addSvgMove(selectedBoxesforSwap);
     selectedBoxesforSwap = [];
     selectedChildrenForSwap = []
 }
