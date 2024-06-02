@@ -13,6 +13,8 @@
 //  var redBullet = {
 
 //  }
+isDirectionalBulletOptionPresent = false;
+isRotationOptionForRicoSemiricoPresent = false;
  var player1time = 30;
  var player2time = 30;
  var boardStatus = [
@@ -95,6 +97,7 @@ function resumeGame()
 
 function resetGame()
 {  
+    //  localStorage.clear();
    gamestatus = true;
    randomArrangement();
    player1time = 30;
@@ -103,7 +106,6 @@ function resetGame()
    player1timer(0);
    unpopulateGrid();
    populateGrid();
-   localStorage.clear();
 }
 
 function unpopulateGrid()
@@ -113,16 +115,24 @@ function unpopulateGrid()
         {
             parent.removeChild(document.getElementById('box-'+i));
         }
+    localStorage.removeItem("hello");
 }
 var svgEventListener = []
 var parent;
+
+function saveInitialConfiguration(initial_config)
+{  console.log(JSON.stringify(initial_config)); 
+   localStorage.setItem("hello",JSON.stringify(boardStatus));
+}
+
  function populateGrid()
 {   if(gamestatus==false)
     {
         alert("game paused");
         return;
     }
-
+   // saveInitialConfiguration(boardStatus);
+   localStorage.setItem("hello",JSON.stringify(boardStatus));
     parent = document.getElementById('grid-Container');
     var h = 0;
     var c = 0;
@@ -187,7 +197,6 @@ function validate(index)
             return true;
         }
 }
-
 // blurring of the resume and etc. btns
 // automatically coming and going of option of rotate left, right ,up, down , for rico and semirico
 // tank rotation to be thought of  
@@ -316,7 +325,14 @@ function rotatePiecedown(index)
     {
             return;
     }
-    
+    // if(isDirectionalBulletOptionPresent==true)
+    //     {
+    //         removedirectionalBulletShootOption(i);
+    //     }
+    // if(isRotationOptionForRicoSemiricoPresent = true)
+    //     {
+    //         removerotateOptionsForRicoAndSemirico(i);
+    //     }
     unlighten(selectedBoxes)
     selectedBoxes = [];
     const isCanon = (boardStatus[i]==blackCanon || boardStatus[i]==redCanon)
@@ -376,6 +392,7 @@ var selectedChildren = []
 function lighten(selectedBoxes,i)
 {   
     console.log(selectedBoxes);
+    
     selectedChildren = selectedBoxes.map((val)=>{
         var eventhandler = ()=>
             {   
@@ -425,7 +442,7 @@ function selectedBoxClicked(i,val,fromWhere)
         changeChance();
         // can replace above two lines with gameChanceController
         }
-        
+
         shootBullet("red");
     }
     else if(boardStatus[val].indexOf("black")!=-1)
@@ -438,10 +455,14 @@ function selectedBoxClicked(i,val,fromWhere)
         }
         shootBullet("black");
     }
-   saveToStorage(i,val,"moved");
+   saveToStorage(i,val,"move");
    makeSound("piecemove");
    unlighten(selectedBoxes);
    selectedBoxes = [];
+//    if(isDirectionalBulletOptionPresent = true)
+//     {
+//         removedirectionalBulletShootOption(i)
+//     }
 } 
 function unlighten(selectedBoxes)
 {   
@@ -453,6 +474,7 @@ function unlighten(selectedBoxes)
     selectedChildren = [] ; // feel the power of Javascript Objects
     selectedBoxes = [];
     unlightenSwap(selectedBoxesforSwap);
+    
 }
 
 var x ;
@@ -938,26 +960,30 @@ function saveToStorage(index1,index2,action)
 {  
     var piece = boardStatus[index2].split('/')[2];
     steps++;
-   var x1 = Math.floor((index1/8)+1);
-   var y1 = Math.floor((index1%8)+1);
-   var x2 = Math.floor((index2/8)+1);
-   var y2 = Math.floor((index2%8)+1);
+   var x1 = Math.floor((index1/8));  //(index1/8)+1
+   var y1 = Math.floor((index1%8));  //(index1%8)+1
+   var x2 = Math.floor((index2/8));  //(index2/8)+1
+   var y2 = Math.floor((index2%8));  //(index2%8)+1
    
-   if(action!="swap")
+   if(action=="move")
     {
-   localStorage.setItem(steps,piece+"/"+"("+x1+","+y1+") to ("+x2+","+y2+")");
-   displayStorage(piece,x1,y1,x2,y2,steps);
+   localStorage.setItem(steps,"("+x1+","+y1+") to ("+x2+","+y2+")"+"/"+piece);
+   displayStorage(piece,x1,y1,x2,y2,steps,"move");
    console.log(piece.split('.')[0])
     }
-    else
+    else if(action=="swap")
     {   
         var piece2 = boardStatus[index1].split('/')[2];
-        localStorage.setItem(steps,piece+"/"+"("+x1+","+y1+") swapped to ("+x2+","+y2+")");
-        localStorage.setItem(steps,piece2+"/"+"("+x2+","+y2+") swapped to ("+x1+","+y1+")");
-        displayStorage(piece,x1,y1,x2,y2,steps);
-        displayStorage(piece2,x2,y2,x1,y1,steps);
+        localStorage.setItem(steps,"("+x1+","+y1+") swapped to ("+x2+","+y2+")/"+piece+"/"+piece2);
+        displayStorage(piece,x1,y1,x2,y2,steps,"swap");
+        displayStorage(piece2,x2,y2,x1,y1,steps,"swap");
     }
-   
+    else if(action=="rotate")
+        { var rotatedPiece = boardStatus[index1].split('/')[2].split('.')[0];
+          let directionOfPiece = orientationPawn[rotatedPiece];
+          localStorage.setItem(steps,"rotated at ("+x1+","+y1+") "+directionOfPiece+"/"+rotatedPiece);
+          displayStorage(rotatedPiece,x1,y1,directionOfPiece,null,steps,"rotate");
+        }
 }
 
 // from,to,rotated array
@@ -992,10 +1018,24 @@ function redo()
     
 }
 
-function displayStorage(piece,x1,y1,x2,y2,steps)
-{
-    piece = piece.split('.')[0];
-    var data = "("+(x1+1)+","+(y1+1)+") to ("+(x2+1)+","+(y2+1)+")";
+function displayStorage(piece,x1,y1,x2,y2,steps,action)
+{   if(action!="rotate")
+    {
+        piece = piece.split('.')[0];
+    }
+    var data;
+    if(action=="move")
+        {
+             data = "("+(x1+1)+","+(y1+1)+") to ("+(x2+1)+","+(y2+1)+")";
+        }
+    else if(action=="swap")
+        {
+            data = "("+(x1+1)+","+(y1+1)+") swapped to ("+(x2+1)+","+(y2+1)+")";
+        }
+    else if(action=="rotate")
+        {
+            data = "rotated "+x2+" at ("+x1+","+y1+")";
+        }
     if(piece.indexOf("red")!=-1)
         {
              const display = document.getElementById("Player-1-history");
@@ -1240,7 +1280,7 @@ function rotateCanon(index,CanonDirection)
 }
 // hamburger menu for some stuffs 
 function removedirectionalBulletShootOption(index)
-{
+{   isDirectionalBulletOptionPresent = false;
     const playerNo = (boardStatus[index].indexOf("red")!=-1)?1:2;
     const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
     const childDiv  = document.getElementById("rotateDivCanon");
@@ -1252,7 +1292,7 @@ function removedirectionalBulletShootOption(index)
     parentDiv.removeChild(message);
 }
 function directionalBulletShootOption(index)
-{
+{   isDirectionalBulletOptionPresent = true;
     const playerNo = (boardStatus[index].indexOf("red")!=-1)?1:2;
     const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
     const childDiv  = document.createElement("div");
@@ -1312,14 +1352,430 @@ function destroySemiricochet()
 
 function game_replay()
 {
-
+    //boardStatus = localStorage.getItem("hello");
+    //populateGrid();
+    for(let i in localStorage)
+        {
+            if(+i != NaN)
+            {
+               console.log(i);
+               let info = localStorage.getItem(i);
+               compileMovementRequests(info);
+            }
+        }
 }
+// synchronize all things
+function compileMovementRequests(info)
+{   let moveFunction;
+    if(info.indexOf("to")!=-1)
+        { 
+            //  "("+x1+","+y1+") to ("+x2+","+y2+")"+"/"+piece
+            let x1 = +info[1];
+            let y1 = +info[3];
+            let x2 = +info[10];
+            let y2 = +info[12];
+            let index1 = 8*x1+y1;
+            let index2 = 8*x2+y2;
+            moveFunction = ()=>{
+                setTimeout(()=>{
+                      move(index1);
+                      setTimeout(()=>{
+                        selectedBoxClicked(index1,index2,false);
+                      },1000)
+                },1000)
+        }
+        }
+    else if(info.indexOf("rotated")!=-1)
+        {  // "rotated at ("+x1+","+y1+") "+directionOfPiece+"/"+rotatedPiece
+            let rotatedPiece = info.split('/')[1];
+            let directionOfPiece = info.split('/')[0].split(' ')[3];
+            let x1 = +info[12];
+            let y1 = +info[14];
+            let index1 = 8*x1+y1;
+            if(rotatedPiece.indexOf('canon')!=-1)
+                {
+                    moveFunction = ()=>{
+                        setTimeout(()=>{
+                            move(i);
+                            setTimeout(()=>{
+                                rotateCanon(index1,directionOfPiece);
+                            },1000)
+                        },1000)
+                    }
+                }
+                else if(rotatedPiece.indexOf('semiricochet')!=-1)
+                    {
+                        if(directionOfPiece.indexOf("up")!=-1)
+                            {
+                                moveFunction = ()=>{
+                                    setTimeout(()=>{
+                                        move(index1);
+                                        setTimeout(()=>{
+                                            rotatePieceup(index1);
+                                        },1000)
+                                    },1000)
+                                }
+                            }
+                        else if(directionOfPiece.indexOf("down")!=-1)
+                            {
+                                moveFunction = ()=>{
+                                    setTimeout(()=>{
+                                        move(index1);
+                                        setTimeout(()=>{
+                                            rotatePiecedown(index1);
+                                        },1000)
+                                    },1000)
+                                }
+                            }
+                        else if(directionOfPiece.indexOf("right")!=-1)
+                            {
+                                moveFunction = ()=>{
+                                    setTimeout(()=>{
+                                        move(index1);
+                                        setTimeout(()=>{
+                                            rotatePieceright(index1);
+                                        },1000)
+                                    },1000)
+                                }
+                            }
+                        else if(directionOfPiece.indexOf("left")!=-1)
+                            {
+                                 moveFunction = ()=>{
+                                    setTimeout(()=>{
+                                        move(index1);
+                                        setTimeout(()=>{
+                                            rotatePieceleft(index1);
+                                        },1000)
+                                    },1000)
+                                }
+                            }
+                    }
+            else if(rotatedPiece.indexOf('ricochet')!=-1)
+                {
+                    if(directionOfPiece.indexOf("right")!=-1)
+                        {
+                            moveFunction = ()=>{
+                                setTimeout(()=>{
+                                    move(index1);
+                                    setTimeout(()=>{
+                                        rotatePieceright(index1);
+                                    },1000)
+                                },1000)
+                            }
+                        }
+                        else if(directionOfPiece.indexOf("left")!=-1)
+                            {
+                                moveFunction = ()=>{
+                                    setTimeout(()=>{
+                                        move(index1);
+                                        setTimeout(()=>{
+                                            rotatePieceleft(index1);
+                                        },1000)
+                                    },1000)
+                                }
+                            }
+                }
+            
+        }
+    else if(info.indexOf("swapped")!=-1)
+        {  
+            // "("+x1+","+y1+") swapped to ("+x2+","+y2+")/"+piece+"/"+piece2
+            let x1 = +info[1];
+            let y1 = +info[3];
+            let x2 = +info[10];
+            let y2 = +info[12];
+            let index1 = 8*x1+y1;
+            let index2 = 8*x2+y2;
+            moveFunction = ()=>{
+                setTimeout(()=>{
+                      move(index1);
+                      setTimeout(()=>{
+                        doRicochetSwap(index1,index2,false);
+                      },1000)
+                },1000)
+        }
+        }
+
+        moveFunction(); // taking the action
+}
+
 
 function single_player_mode()
 {
-   // randomly choosing among all the possible moves possible 
+    setInterval(generateMove, 20000);
 }
 
+var singlePlayerSelectedBox = []
+var singlePlayerSelectedSwapBox = []
+function isRotationPossible(i)
+{   var possibleFunctions = []
+    let randomPiece = document.getElementById(boardStatus[i].split('/')[2]);
+    if(randomPiece==blackCanon)
+        {
+            possibleFunctions.push(()=>{
+                setTimeout(()=>{
+                    move(i);
+                    setTimeout(()=>{
+                        rotateCanon(i,"down");
+                    },1000)
+                },1000)
+            })
+            // possibleFunctions.push(rotateCanon(i,"left"));
+            // possibleFunctions.push(rotateCanon(i,"right"));
+            possibleFunctions.push(()=>{
+                setTimeout(()=>{
+                    move(i);
+                    setTimeout(()=>{
+                        rotateCanon(i,"left");
+                    },1000)
+                },1000)
+            })
+            possibleFunctions.push(()=>{
+                setTimeout(()=>{
+                    move(i);
+                    setTimeout(()=>{
+                        rotateCanon(i,"right");
+                    },1000)
+                },1000)
+            })
+        }
+    else if(randomPiece==blackRicochet)
+        {
+            // possibleFunctions.push(rotatePieceright(i));
+            // possibleFunctions.push(rotatePieceleft(i));
+            possibleFunctions.push(()=>{
+                setTimeout(()=>{
+                    move(i);
+                    setTimeout(()=>{
+                        rotatePieceright(i);
+                    },1000)
+                },1000)
+            })
+            possibleFunctions.push(()=>{
+                setTimeout(()=>{
+                    move(i);
+                    setTimeout(()=>{
+                        rotatePieceleft(i);
+                    },1000)
+                },1000)
+            })
+        }
+    else if(randomPiece==blackSemiricochet)
+        {
+            // possibleFunctions.push(rotatePieceright(i));
+            // possibleFunctions.push(rotatePieceleft(i));
+            // possibleFunctions.push(rotatePieceup(i));
+            // possibleFunctions.push(rotatePiecedown(i))
+            possibleFunctions.push(()=>{
+                setTimeout(()=>{
+                    move(i);
+                    setTimeout(()=>{
+                        rotatePieceright(i);
+                    },1000)
+                },1000)
+            })
+            possibleFunctions.push(()=>{
+                setTimeout(()=>{
+                    move(i);
+                    setTimeout(()=>{
+                        rotatePieceleft(i);
+                    },1000)
+                },1000)
+            })
+            possibleFunctions.push(()=>{
+                setTimeout(()=>{
+                    move(i);
+                    setTimeout(()=>{
+                        rotatePieceup(i);
+                    },1000)
+                },1000)
+            })
+            possibleFunctions.push(()=>{
+                setTimeout(()=>{
+                    move(i);
+                    setTimeout(()=>{
+                        rotatePiecedown(i);
+                    },1000)
+                },1000)
+            })
+
+        }
+    return possibleFunctions;
+}
+function isMovePossible(i)
+{  
+    singlePlayerSelectedBox = [];
+    var possibleFunctions = []
+    if(gamestatus==false)
+        {
+            alert("game paused");
+            return;
+        }
+        singlePlayerSelectedBox = [];
+        const isCanon = (boardStatus[i]==blackCanon || boardStatus[i]==redCanon)
+        //console.log(i-8>=0 && boardStatus[i-8]==''  )
+    
+           if(i-8>=0 && boardStatus[i-8]=='' && (!isCanon) )
+            {  
+                singlePlayerSelectedBox.push(i-8);
+            }
+            if(i-8-1>=0 && (i-8)%8!=0 && boardStatus[i-8-1]=='' && (!isCanon) )
+            {    
+                singlePlayerSelectedBox.push(i-8-1);
+            }
+            if(i-8+1>=0 && (i-8+1)%8!=0 && boardStatus[i-8+1]=='' && (!isCanon) )
+            {   
+                singlePlayerSelectedBox.push(i-8+1);
+            }
+            if(i-1>=0 && i%8!=0 && boardStatus[i-1]=='' )
+                {  
+                    singlePlayerSelectedBox.push(i-1);
+                }
+            if(i+8<=63 && boardStatus[i+8]=='' && (!isCanon) )
+            {   
+                singlePlayerSelectedBox.push(i+8);
+            }
+            if(i+8-1<=63 && (i+8)%8!=0 && boardStatus[i+8-1]=='' && (!isCanon) )
+            {   
+                singlePlayerSelectedBox.push(i+8-1);
+            }
+            if(i+8+1<=63 && (i+8+1)%8!=0 && boardStatus[i+8+1]=='' && (!isCanon) )
+            {   
+                singlePlayerSelectedBox.push(i+8+1);
+            }
+            if(i+1<=63 && (i+1)%8!=0 && boardStatus[i+1]=='')
+                {   
+                    singlePlayerSelectedBox.push(i+1);
+                }
+        possibleFunctions = singlePlayerSelectedBox.map((val)=>{
+            return ()=>{
+                setTimeout(()=>{
+                      move(i);
+                      setTimeout(()=>{
+                        selectedBoxClicked(i,val,false);
+                      },1000)
+                },1000)
+                // selectedBoxClicked(i,val,false);  }
+        }} )
+        return possibleFunctions;
+}
+
+function isSwapPossible(i)
+{   var possibleFunctions = []
+    singlePlayerSelectedSwapBox = [];
+    if(gamestatus==false)
+        {
+            alert("game paused");
+            return;
+        }
+    singlePlayerSelectedSwapBox = [];
+    if(i-8>=0 && boardStatus[i-8]!='' && boardStatus[i-8].indexOf("titan")==-1)
+        {  
+           singlePlayerSelectedSwapBox.push(i-8);
+        }
+        if(i-8-1>=0 && (i-8)%8!=0 && boardStatus[i-8-1]!='' && boardStatus[i-8-1].indexOf("titan")==-1)
+        {    
+           singlePlayerSelectedSwapBox.push(i-8-1);
+        }
+        if(i-8+1>=0 && (i-8+1)%8!=0 && boardStatus[i-8+1]!='' && boardStatus[i-8+1].indexOf("titan")==-1)
+        {   
+           singlePlayerSelectedSwapBox.push(i-8+1);
+        }
+        if(i-1>=0 && index%8!=0 && boardStatus[i-1]!='' && boardStatus[i-1].indexOf("titan")==-1)
+            {    
+               singlePlayerSelectedSwapBox.push(i-1);
+            }
+        if(i+8<=63 && boardStatus[i+8]!='' && boardStatus[i+8].indexOf("titan")==-1)
+        {    
+           singlePlayerSelectedSwapBox.push(i+8);
+        }
+        if(i+8-1<=63 && (i+8)%8!=0 && boardStatus[i+8-1]!='' && boardStatus[i+8-1].indexOf("titan")==-1)
+        {    
+           singlePlayerSelectedSwapBox.push(i+8-1);
+        }
+        if(i+8+1<=63 && (i+8+1)%8!=0 && boardStatus[i+8+1]!='' && boardStatus[i+8+1].indexOf("titan")==-1)
+        {    
+           singlePlayerSelectedSwapBox.push(i+8+1);
+        }
+        if(i+1<=63 && (i+1)%8!=0 && boardStatus[i+1]!='' && boardStatus[i+1].indexOf("titan")==-1)
+            {    
+               singlePlayerSelectedSwapBox.push(i+1);
+            }
+        possibleFunctions = singlePlayerSelectedSwapBox.map((val)=>{
+            return ()=>{
+                setTimeout(()=>{
+                      move(i);
+                      setTimeout(()=>{
+                        doRicochetSwap(i,val,false);
+                      },1000)
+                },1000)
+                // basically trying to mimic the behaviour and order with which user clicks mouse button
+        }
+        })
+        return possibleFunctions;
+}
+let allPossibleOptions = [];
+function generateMove()
+{   allPossibleOptions = [];
+    if(gameChance=="black")
+        {
+            var pieceOptions = [blackCanon,blackRicochet,blackSemiricochet,blackTank,blackTitan];
+            while(true)
+            {
+            let randomNo = Math.floor(Math.random()*pieceOptions.length);
+            let index = boardStatus.indexOf(pieceOptions[randomNo]);
+            
+            if(pieceOptions[randomNo]==blackCanon)
+                {
+                     let option1 = isMovePossible(index);
+                     let option2 = isRotationPossible(index);
+                     allPossibleOptions.push(...option1);
+                     allPossibleOptions.push(...option2);
+                }
+            else if(pieceOptions[randomNo]==blackRicochet)
+                {
+                    let option1 = isMovePossible(index);
+                    let option2 = isRotationPossible(index);
+                    let option3 = isSwapPossible(index);
+                    allPossibleOptions.push(...option1);
+                    allPossibleOptions.push(...option2);
+                    allPossibleOptions.push(...option3);
+                }
+            else if(pieceOptions[randomNo]==blackSemiricochet)
+                {
+                    let option1 = isMovePossible(index);
+                    let option2 = isRotationPossible(index);
+                    allPossibleOptions.push(...option1);
+                    allPossibleOptions.push(...option2);
+                }
+            else if(pieceOptions[randomNo]==blackTank)
+                {
+                    let option1 = isMovePossible(index);
+                    allPossibleOptions.push(...option1);
+                }
+            else if(pieceOptions[randomNo]==blackTitan)
+                {
+                    let option1 = isMovePossible(index);
+                    allPossibleOptions.push(...option1);
+                }
+                if(allPossibleOptions.length>0)
+                    {
+                        break;
+                    }
+                else
+                {
+                    continue;
+                }
+            }
+            generateMoveRandomly();
+        }
+}
+function generateMoveRandomly()
+{
+    let randomNo = Math.floor(Math.random()*allPossibleOptions.length);
+    let randomFunction = allPossibleOptions(randomNo);
+    randomFunction();
+}
 function spells()
 {
 
