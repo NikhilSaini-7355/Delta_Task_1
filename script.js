@@ -115,14 +115,19 @@ function unpopulateGrid()
         {
             parent.removeChild(document.getElementById('box-'+i));
         }
-    localStorage.removeItem("hello");
+   // localStorage.removeItem("hello");
 }
 var svgEventListener = []
 var parent;
-
-function saveInitialConfiguration(initial_config)
-{  console.log(JSON.stringify(initial_config)); 
-   localStorage.setItem("hello",JSON.stringify(boardStatus));
+let initial_config = [];
+function saveInitialConfiguration()
+{ 
+// console.log(JSON.stringify(boardStatus)); 
+//    localStorage.setItem("hello",JSON.stringify(boardStatus));
+   for(let z=0;z<=63;z++)
+    {
+        initial_config[z] = boardStatus[z];
+    }
 }
 
  function populateGrid()
@@ -131,8 +136,8 @@ function saveInitialConfiguration(initial_config)
         alert("game paused");
         return;
     }
-   // saveInitialConfiguration(boardStatus);
-   localStorage.setItem("hello",JSON.stringify(boardStatus));
+   saveInitialConfiguration();
+  // localStorage.setItem("hello",JSON.stringify(boardStatus));
     parent = document.getElementById('grid-Container');
     var h = 0;
     var c = 0;
@@ -201,7 +206,7 @@ function validate(index)
 // automatically coming and going of option of rotate left, right ,up, down , for rico and semirico
 // tank rotation to be thought of  
 function removerotateOptionsForRicoAndSemirico(index)
-{
+{   isRotationOptionForRicoSemiricoPresent = false;
     const playerNo = (boardStatus[index].indexOf("red")!=-1)?1:2;
     const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
     const childDiv  = document.getElementById("rotateDivRicoSemiRico");
@@ -215,6 +220,7 @@ function removerotateOptionsForRicoAndSemirico(index)
 function rotateOptionsForRicoAndSemirico(index)
 {   
     const playerNo = (boardStatus[index].indexOf("red")!=-1)?1:2;
+    isRotationOptionForRicoSemiricoPresent = (playerNo==1)?"red":"black";
     const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
     const childDiv  = document.createElement("div");
     childDiv.setAttribute("id","rotateDivRicoSemiRico");
@@ -312,7 +318,29 @@ function rotatePiecedown(index)
    removerotateOptionsForRicoAndSemirico(index);
 }
 
-
+function removeUnnecessaryDiv(i)
+{   let parentDiv;
+    if(boardStatus[i].indexOf("red")!=-1)
+        {
+            parentDiv = document.getElementById("Player-1-flex");
+            if(parentDiv.childElementCount==4)
+                {
+                    parentDiv.removeChild(parentDiv.children[3]);
+                    parentDiv.removeChild(parentDiv.children[2]);
+                }
+        }
+        else
+        {
+            parentDiv = document.getElementById("Player-2-flex");
+            if(parentDiv.childElementCount==4)
+                {
+                    parentDiv.removeChild(parentDiv.children[3]);
+                    parentDiv.removeChild(parentDiv.children[2]);
+                }
+        }
+    isDirectionalBulletOptionPresent = false;
+    isRotationOptionForRicoSemiricoPresent = false;
+}
    function move(i)
  {  if(gamestatus==false)
     {
@@ -333,6 +361,7 @@ function rotatePiecedown(index)
     //     {
     //         removerotateOptionsForRicoAndSemirico(i);
     //     }
+    removeUnnecessaryDiv(i);
     unlighten(selectedBoxes)
     selectedBoxes = [];
     const isCanon = (boardStatus[i]==blackCanon || boardStatus[i]==redCanon)
@@ -420,7 +449,7 @@ function selectedBoxClicked(i,val,fromWhere)
    const child1 = document.getElementById('box-'+(i+1))
    const child2 = document.getElementById('box-'+(val+1))
    const svg = document.getElementById(boardStatus[i].split("/")[2])
-   if(boardStatus[i].split("/")[2].indexOf("ricochet")!=-1)
+   if(boardStatus[i].split("/")[2].indexOf("ricochet")!=-1 && isRotationOptionForRicoSemiricoPresent!=false)
     {
         removerotateOptionsForRicoAndSemirico(i);
     }
@@ -444,6 +473,14 @@ function selectedBoxClicked(i,val,fromWhere)
         }
 
         shootBullet("red");
+        if(isDirectionalBulletOptionPresent =="red")
+            {
+                removedirectionalBulletShootOption(val);
+            }
+        if(isRotationOptionForRicoSemiricoPresent == "red")
+            {
+                removerotateOptionsForRicoAndSemirico(val);
+            }
     }
     else if(boardStatus[val].indexOf("black")!=-1)
     {   console.log("pamello")
@@ -454,15 +491,19 @@ function selectedBoxClicked(i,val,fromWhere)
             changeChance();
         }
         shootBullet("black");
+        if(isDirectionalBulletOptionPresent == "black")
+            {
+                removedirectionalBulletShootOption(val);
+            }
+        if(isRotationOptionForRicoSemiricoPresent == "black")
+            {
+                removerotateOptionsForRicoAndSemirico(val);
+            }
     }
    saveToStorage(i,val,"move");
    makeSound("piecemove");
    unlighten(selectedBoxes);
    selectedBoxes = [];
-//    if(isDirectionalBulletOptionPresent = true)
-//     {
-//         removedirectionalBulletShootOption(i)
-//     }
 } 
 function unlighten(selectedBoxes)
 {   
@@ -924,9 +965,7 @@ const audio = {
     "gameover" : GameOverAudio,
     "piecemove" : pieceMovingAudio
 }
-
   audio[sound].play();
-  
 }
 
 function gameChanceController()
@@ -1292,7 +1331,7 @@ function removedirectionalBulletShootOption(index)
     parentDiv.removeChild(message);
 }
 function directionalBulletShootOption(index)
-{   isDirectionalBulletOptionPresent = true;
+{   
     const playerNo = (boardStatus[index].indexOf("red")!=-1)?1:2;
     const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
     const childDiv  = document.createElement("div");
@@ -1318,11 +1357,13 @@ function directionalBulletShootOption(index)
             childDiv.appendChild(up);
             childDiv.appendChild(left);
             childDiv.appendChild(right);
+            isDirectionalBulletOptionPresent = "red";
         }
     else
     {   childDiv.appendChild(down);
         childDiv.appendChild(left);
         childDiv.appendChild(right);
+        isDirectionalBulletOptionPresent = "black";
     }
     const message = document.createElement("div");
     message.setAttribute("id","rotateCanonMessage");
@@ -1349,11 +1390,12 @@ function destroySemiricochet()
 // Third level 
 
 // a function which is able to take the orders of game replay and single_player_mode and take the necessary actions itself
-
+// winning strategy requires work
 function game_replay()
 {
-    //boardStatus = localStorage.getItem("hello");
-    //populateGrid();
+    boardStatus = [];
+    boardStatus.push(...initial_config);
+    populateGrid();
     for(let i in localStorage)
         {
             if(+i != NaN)
@@ -1502,7 +1544,7 @@ function compileMovementRequests(info)
 
 function single_player_mode()
 {
-    setInterval(generateMove, 20000);
+    setInterval(generateMove, 10000);
 }
 
 var singlePlayerSelectedBox = []
@@ -1681,7 +1723,7 @@ function isSwapPossible(i)
         {   
            singlePlayerSelectedSwapBox.push(i-8+1);
         }
-        if(i-1>=0 && index%8!=0 && boardStatus[i-1]!='' && boardStatus[i-1].indexOf("titan")==-1)
+        if(i-1>=0 && i%8!=0 && boardStatus[i-1]!='' && boardStatus[i-1].indexOf("titan")==-1)
             {    
                singlePlayerSelectedSwapBox.push(i-1);
             }
@@ -1773,7 +1815,7 @@ function generateMove()
 function generateMoveRandomly()
 {
     let randomNo = Math.floor(Math.random()*allPossibleOptions.length);
-    let randomFunction = allPossibleOptions(randomNo);
+    let randomFunction = allPossibleOptions[randomNo];
     randomFunction();
 }
 function spells()
@@ -1782,5 +1824,12 @@ function spells()
 }
 
 // animations
+function showHistory()
+{
 
+}
+function deleteHistory()
+{
+    
+}
 
