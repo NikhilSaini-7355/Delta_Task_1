@@ -208,4 +208,25 @@ border-style: solid;
     transform: translateX();
 }
 
+#redBullet
+{
+    align-content: center;
+    transition-property: transform ;
+    transition-duration: 2s;
+}
+
+#blackBullet
+{
+    align-content: center;
+    transition :  transform 2s;
+}
+
+.imageWrapper {
+    position: relative;
+  }
+.overlayImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
 /* animations for selected boxes */

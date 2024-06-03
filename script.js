@@ -15,6 +15,7 @@
 //  }
 isDirectionalBulletOptionPresent = false;
 isRotationOptionForRicoSemiricoPresent = false;
+var playerWon = false;
  var player1time = 30;
  var player2time = 30;
  var boardStatus = [
@@ -120,6 +121,7 @@ function unpopulateGrid()
 var svgEventListener = []
 var parent;
 let initial_config = [];
+var replayHappening = false;
 function saveInitialConfiguration()
 { 
 // console.log(JSON.stringify(boardStatus)); 
@@ -186,7 +188,11 @@ function saveInitialConfiguration()
     player1timer(1);
     player2timer(0);
    // gameChanceController();
-    localStorage.clear();
+   if(replayHappening==false)
+    {
+        localStorage.clear();
+    }
+    
  }
 
 //  var selectedBoxfound = false;
@@ -206,7 +212,10 @@ function validate(index)
 // automatically coming and going of option of rotate left, right ,up, down , for rico and semirico
 // tank rotation to be thought of  
 function removerotateOptionsForRicoAndSemirico(index)
-{   isRotationOptionForRicoSemiricoPresent = false;
+{   if(isRotationOptionForRicoSemiricoPresent==false)
+    {
+        return;
+    }
     const playerNo = (boardStatus[index].indexOf("red")!=-1)?1:2;
     const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
     const childDiv  = document.getElementById("rotateDivRicoSemiRico");
@@ -214,6 +223,7 @@ function removerotateOptionsForRicoAndSemirico(index)
     console.log(parentDiv);
     console.log(childDiv);
     console.log(message);
+    isRotationOptionForRicoSemiricoPresent = false;
     parentDiv.removeChild(childDiv);
     parentDiv.removeChild(message);
 }
@@ -272,6 +282,7 @@ function rotatePieceleft(index)
    orientationPawn[pieceName] = "left";
    unlighten(selectedBoxes);
    changeChance();
+   saveToStorage(index,null,"rotate");
    removerotateOptionsForRicoAndSemirico(index);
 }
 
@@ -286,6 +297,7 @@ function rotatePieceright(index)
    orientationPawn[pieceName] = "right";
    unlighten(selectedBoxes);
    changeChance();
+   saveToStorage(index,null,"rotate");
    removerotateOptionsForRicoAndSemirico(index);
 }
 
@@ -301,6 +313,7 @@ function rotatePieceup(index)
    orientationPawn[pieceName] = "up";
    unlighten(selectedBoxes);
    changeChance();
+   saveToStorage(index,null,"rotate");
    removerotateOptionsForRicoAndSemirico(index);
 }
 
@@ -308,13 +321,21 @@ function rotatePiecedown(index)
 {
     const piece = document.getElementById(boardStatus[index].split("/")[2]);
    //piece.setAttribute('style',"align-content: center; transform : rotate(180deg);");
-   piece.classList.add("rotateDown");
+   if(boardStatus[index].indexOf("semiricochet")!=-1)
+    {
+        piece.classList.add("rotateRight");
+    }
+    else
+    {
+        piece.classList.add("rotateDown");
+    }
    piece.classList.remove("rotateUp");
    piece.classList.remove("rotateLeft");
    var pieceName = boardStatus[index].split("/")[2].split('.')[0];
    orientationPawn[pieceName] = "down";
    unlighten(selectedBoxes);
    changeChance();
+   saveToStorage(index,null,"rotate");
    removerotateOptionsForRicoAndSemirico(index);
 }
 
@@ -347,6 +368,11 @@ function removeUnnecessaryDiv(i)
         alert("game paused");
         return;
     }
+    if(playerWon!=false && isReplayGoingOn == false)
+        {
+            alert("game has ended "+playerWon+" has won");
+            return;
+        }
     // if()
     i = +(i-1);
     if(!validate(i))
@@ -546,21 +572,31 @@ if(status==0)
                     {
                         player1time++;
                     }
+                
                 minutes = 0;
                 var seconds = player1time;
              //   console.log("status is 1-1")
-                document.getElementById("Player-1-timer").innerHTML = minutes + "m :" + seconds + "s ";
+             if(isReplayGoingOn==true)
+                {
+                    document.getElementById("Player-1-timer").innerHTML = "Replay Going On"
+                }
+                else
+                {
+                    document.getElementById("Player-1-timer").innerHTML = minutes + "m :" + seconds + "s ";
+                }
                // console.log("player1 timer"+minutes+"  "+seconds);
-                
                 if (player1time < 0) {
                   clearInterval(x);
-                  document.getElementById("Player-1-timer").innerHTML = "PLAYER 2 WON";
+                  playerWon = "black";
+                  if(isReplayGoingOn==false)
+                    {
+                        document.getElementById("Player-1-timer").innerHTML = "PLAYER 2 WON";
+                    }
                 //  alert("Player 2 won");
                 }
                 player1time--;
               }, 1000);
         }
-
 }
 var y;
 function player2timer(status)
@@ -589,13 +625,24 @@ function player2timer(status)
             //    console.log("status is 0-2")
                   minutes = 0;
                   var seconds = player2time;
+                  if(isReplayGoingOn==true)
+                    {
+                        document.getElementById("Player-1-timer").innerHTML = "Replay Going On"
+                    }
+                  else
+                  {
+                    document.getElementById("Player-2-timer").innerHTML = minutes + "m :" + seconds + "s ";
+                  }
                   
-                  document.getElementById("Player-2-timer").innerHTML = minutes + "m :" + seconds + "s ";
                   //console.log("player2 timer"+minutes+"   "+seconds);
                   
                   if (player2time < 0) {
                     clearInterval(y);
-                    document.getElementById("Player-2-timer").innerHTML = "PLAYER 1 WON";
+                    playerWon = "red"
+                    if(isReplayGoingOn==false)
+                        {
+                            document.getElementById("Player-2-timer").innerHTML = "PLAYER 1 WON";
+                        }
                  //   alert("Player 1 won");
                   }
                   player2time--;
@@ -610,81 +657,65 @@ function player2timer(status)
     red_bullet.setAttribute( 'width','80px');
     red_bullet.setAttribute( 'height','80px');
     red_bullet.setAttribute('src',bullet_red);
-    red_bullet.setAttribute('style',' align-content: center; ');
+    red_bullet.classList.add('overlayImage');
+    red_bullet.setAttribute('id','redBullet');
+    //red_bullet.setAttribute('style',' align-content: center; transition : transform 5s');
+    //let redx = 0;
+    //let redy = 0;
+    // var box = document.getElementById('box-'+(boardStatus.indexOf(redCanon)+1));
+    // box.appendChild(red_bullet);
 
     var bullet_black = './assets/black-bullet.svg';
     const black_bullet = document.createElement("img");
     black_bullet.setAttribute( 'width','80px');
     black_bullet.setAttribute( 'height','80px');
     black_bullet.setAttribute('src',bullet_black);
-    black_bullet.setAttribute('style',' align-content: center; ');
-
+    black_bullet.classList.add('overlayImage');
+    black_bullet.setAttribute('id','blackBullet');
+    //black_bullet.setAttribute('style',' align-content: center; transition : transform 5s');
+    //let blackx = 0;
+    //let blacky = 0;
+    let bulletx = 0;
+    let bullety = 0;
+    let bullet_direction ;
 // Needs improvement
 function moveBullet(index1,color,diff,direction)
 {
     console.log("the values are "+index1+"  "+color+"  "+diff+"  "+direction);
     
-    // if(color=="red")
-    //  {
-    //      index1 = index1-8;
-     
-    //  var box = document.getElementById('box-'+(index1+1));
-    //  box.appendChild(svg);
-    //  
-    //  var x = setInterval(function(){
-    //       box.removeChild(svg);
-    //      console.log("bullet fired")
-    //      index1 = index1-8;
-    //      if(index1<index2)
-    //          {  hittingObject(ObjectHit);
-    //             clearInterval(x);
-    //          }
-    //    box = document.getElementById('box-'+(index1+1));
-    //    box.appendChild(svg);
-    //    svg.setAttribute('style','transform: translateY(80px);')
-    //  },250)
-    // // box.removeChild(svg);
-    //  }
-    //  else{
-    //      index1 = index1+8;
-    //      var box = document.getElementById('box-'+(index1+1));
-    //      box.appendChild(svg);
-    //      makeSound("bulletshoot");
-    //      var x = setInterval(function(){
-    //          box.removeChild(svg);
-    //          console.log("bullet fired")
-    //          index1 = index1+8;
-    //          if(index1>index2)
-    //              {  hittingObject(ObjectHit);
-    //                  console.log("came out")
-    //                 clearInterval(x);
-    //              }
-    //        box = document.getElementById('box-'+(index1+1));
-           
-    //        box.appendChild(svg);
-    //      },250)
- 
-    //  }
     var bullet = (color=="red")?(red_bullet):(black_bullet);
-    var box = document.getElementById('box-'+(index1+1));
-    box.appendChild(bullet);
+    //let [bulletx,bullety] = (color=="red")?[redx,redy]:[blackx,blacky];
+    
     var moveMagnitude = 80*diff;
     if(direction=="up")
-    {
-        bullet.setAttribute("style",' align-content: center; transform : translateY('+moveMagnitude+'px);');
+    {   bullet_direction = "up"; let f = 0;
+       setTimeout(()=>{
+            bullety += -80*diff;
+            bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
+        },500);
     }
     else if(direction=="down")
-    {
-        bullet.setAttribute("style",' align-content: center; transform : translateY('+(-1*moveMagnitude)+'px);');
+    {   bullet_direction = "down";
+        setTimeout(()=>{
+            bullety += moveMagnitude;
+            bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
+        },500);
     }
     else if(direction=="right")
-    {
-        bullet.setAttribute("style",' align-content: center; transform : translateX('+moveMagnitude+'px);');
+    {   bullet_direction = "right";
+        setTimeout(()=>{
+            bulletx += moveMagnitude;
+            bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
+        },500);
     }
     else if(direction=="left")
-    {
-        bullet.setAttribute("style",' align-content: center; transform : translateX('+(-1*moveMagnitude)+'px);');
+    {   bullet_direction = "left";
+        setTimeout(()=>{
+        bulletx += -80*diff;
+        bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
+    },500);
     }
+    return;
 }
 // think about condition of non hitting anything also
 function calculateLeftBulletDifference(index1,color,direction)
@@ -712,7 +743,7 @@ function calculateLeftBulletDifference(index1,color,direction)
             diff = (index1-index2);
     }
     moveBullet(index1,color,diff,direction);
-    hittingObject(ObjectHit);
+    hittingObject(ObjectHit,color);
 }
 
 function calculateRightBulletDifference(index1,color,direction )
@@ -742,7 +773,7 @@ function calculateRightBulletDifference(index1,color,direction )
            diff = (index2-index1);
    }
    moveBullet(index1,color,diff,direction);
-   hittingObject(ObjectHit);
+   hittingObject(ObjectHit,color);
 }
 
 function calculateVerticalDifferenceForCanon(index1,color,direction)
@@ -840,15 +871,21 @@ function calculateVerticalDifferenceForCanon(index1,color,direction)
         }
         // return [index1,index2,diff,ObjectHit];
         moveBullet(index1,color,diff,direction);
-        hittingObject(ObjectHit);
+        hittingObject(ObjectHit,color);
 }
 async function shootBullet(color)
 {  var canon = (color=="red")?redCanon:blackCanon;
+   bulletx = 0;
+   bullety = 0;
    makeSound("bulletshoot");
    var index = boardStatus.indexOf(canon);
    var direction = orientationPawn[canon.split('/')[2].split('.')[0]];
    console.log("bullet fired")
    console.log(index+"   "+color+"   "+direction);
+   let bulletToAdd = (color=="red")?(red_bullet):(black_bullet);
+   var box = document.getElementById('box-'+(index+1));
+    box.classList.add('imageWrapper');
+    box.appendChild(bulletToAdd);
    //var [index1,index2,diff,ObjectHit] = calculateVericalDifferenceForCanon(index,color,direction);
    calculateVerticalDifferenceForCanon(index,color,direction);
 //    console.log("the values are"+index1+"  "+index2)
@@ -901,58 +938,186 @@ async function shootBullet(color)
 //     }
 }
 
-function hittingObject(ObjectHit)
+function hittingObject(ObjectHit,color)
 {   // multiple hits through rico and semirico
     // others == ignore or crash
     console.log(ObjectHit);
-    if(ObjectHit.indexOf("titan")!=-1)
+    if(ObjectHit == null)
         {
-            winningLogic(ObjectHit);
+            removeBullet(ObjectHit,color);
+        }
+    else if(ObjectHit.indexOf("titan")!=-1)
+        {
+            winningLogic(ObjectHit,color);
         }
     else if(ObjectHit.indexOf("tank")!=-1)
         {
-            ObjectHitTank();
+            ObjectHitTank(ObjectHit,color);
         }
     else if(ObjectHit.indexOf("ricochet")!=-1)
         {
-            ObjectHitRicochet();
+            ObjectHitRicochet(ObjectHit,color);
         }
     else if(ObjectHit.indexOf("semiricochet")!=-1)
         {
-            ObjectHitSemiRicochet();
+            ObjectHitSemiRicochet(ObjectHit,color);
         }
-    else if(ObjectHit == null)
-        {
-            ObjectHitNothing();
-        }
+        
 }
-   function winningLogic(ObjectHit)
-{
-   if(ObjectHit.indexOf("black")!=-1)
+   function winningLogic(ObjectHit,color)
+{   console.log(ObjectHit);
+   if(ObjectHit.indexOf("black")!=-1 && color == "red")
     {   
         makeSound("gameover");
+        playerWon = "red"
         alert("red won");
     }
-    else
-    {   
+    else if(ObjectHit.indexOf("red")!=-1 && color == "black")
+    {   playerwon = "black"
         makeSound("gameover");
         alert("black won");
     }
 }
-
-function ObjectHitTank()
+function removeBullet(ObjectHit,color)
 {
-
+    let bulletToRemove = (color=="red")?(red_bullet):(black_bullet);
+    let containerBox = (color=="red")?(document.getElementById('box-'+(boardStatus.indexOf(redCanon))+1)):(document.getElementById('box-'+(boardStatus.indexOf(blackCanon))+1))
+    containerBox.removeChild(bulletToRemove);
+}
+function ObjectHitTank(ObjectHit,color)
+{
+   console.log(ObjectHit)
+   if(bullet_direction == "left")
+    {
+        calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"left");
+    }
+    else
+    {
+       removeBullet(ObjectHit,color)
+    }
+}
+function ObjectHitRicochet(ObjectHit,color)
+{
+    console.log(ObjectHit)
+    if(orientationPawn[ObjectHit]=="right")
+        {
+            if(bullet_direction=="right")
+                {
+                    calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"up");
+                }
+            else if(bullet_direction=="down")
+                {
+                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"left");
+                }
+            else if(bullet_direction=="left")
+                {
+                    calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"down");
+                }
+            else if(bullet_direction=="up")
+                { 
+                    calculateRightBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
+                }
+        }
+    else if(orientationPawn[ObjectHit]=="left")
+        {
+            if(bullet_direction=="right")
+                {
+                    calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"down");
+                }
+            else if(bullet_direction=="down")
+                {
+                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
+                }
+            else if(bullet_direction=="left")
+                {
+                    calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"up");
+                }
+            else if(bullet_direction=="up")
+                {   console.log("bullet arrived here")
+                    calculateRightBulletDifference(boardStatus.indexOf(ObjectHit),color,"left");
+                }
+        }
 }
 
-function ObjectHitRicochet()
+function ObjectHitSemiRicochet(ObjectHit,color)
 {
-
-}
-
-function ObjectHitSemiRicochet()
-{
-
+    console.log(ObjectHit)
+    if(orientationPawn[ObjectHit]=="right")
+        {
+            if(bullet_direction=="right")
+                {
+                    destroySemiricochet(boardStatus.indexOf(ObjectHit))
+                }
+            else if(bullet_direction=="down")
+                {
+                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
+                }
+            else if(bullet_direction=="left")
+                {
+                    calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"up");
+                }
+            else if(bullet_direction=="up")
+                { 
+                    destroySemiricochet(boardStatus.indexOf(ObjectHit));
+                }
+        }
+    else if(orientationPawn[ObjectHit]=="left")
+        {
+            if(bullet_direction=="right")
+                {
+                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"up");
+                }
+            else if(bullet_direction=="down")
+                {
+                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"left");
+                }
+            else if(bullet_direction=="left")
+                {
+                    destroySemiricochet(boardStatus.indexOf(ObjectHit));
+                }
+            else if(bullet_direction=="up")
+                { 
+                    destroySemiricochet(boardStatus.indexOf(ObjectHit));
+                }
+        }
+    else if(orientationPawn[ObjectHit]=="down")
+        {
+            if(bullet_direction=="right")
+                {
+                    destroySemiricochet(boardStatus.indexOf(ObjectHit))
+                }
+            else if(bullet_direction=="down")
+                {
+                    destroySemiricochet(boardStatus.indexOf(ObjectHit));
+                }
+            else if(bullet_direction=="left")
+                {
+                    calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"down");
+                }
+            else if(bullet_direction=="up")
+                { 
+                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
+                }
+        }
+    else if(orientationPawn[ObjectHit]=="up")
+        {
+            if(bullet_direction=="right")
+                {
+                    calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"down");
+                }
+            else if(bullet_direction=="down")
+                {
+                    destroySemiricochet(boardStatus.indexOf(ObjectHit))
+                }
+            else if(bullet_direction=="left")
+                {
+                    destroySemiricochet(boardStatus.indexOf(ObjectHit))
+                }
+            else if(bullet_direction=="up")
+                { 
+                    calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"left");
+                }
+        }
 }
 
 function makeSound(sound)
@@ -996,9 +1161,12 @@ function changeChance()
 var steps = 0;
 var revSteps = 0;
 function saveToStorage(index1,index2,action)
-{  
-    var piece = boardStatus[index2].split('/')[2];
-    steps++;
+{   var piece;
+    if(index2!=null)
+     { //  piece = document.getElementById(boardStatus[index2].split('/')[2]);
+        piece = boardStatus[index2].split('/')[2];
+    }
+   steps++;
    var x1 = Math.floor((index1/8));  //(index1/8)+1
    var y1 = Math.floor((index1%8));  //(index1%8)+1
    var x2 = Math.floor((index2/8));  //(index2/8)+1
@@ -1006,55 +1174,101 @@ function saveToStorage(index1,index2,action)
    
    if(action=="move")
     {
-   localStorage.setItem(steps,"("+x1+","+y1+") to ("+x2+","+y2+")"+"/"+piece);
+   localStorage.setItem(steps,"("+(x1+1)+","+(y1+1)+") to ("+(x2+1)+","+(y2+1)+")"+"/"+piece);
    displayStorage(piece,x1,y1,x2,y2,steps,"move");
    console.log(piece.split('.')[0])
     }
     else if(action=="swap")
     {   
         var piece2 = boardStatus[index1].split('/')[2];
-        localStorage.setItem(steps,"("+x1+","+y1+") swapped to ("+x2+","+y2+")/"+piece+"/"+piece2);
+        localStorage.setItem(steps,"("+(x1+1)+","+(y1+1)+") swapped by ("+(x2+1)+","+(y2+1)+")/"+piece+"/"+piece2);
         displayStorage(piece,x1,y1,x2,y2,steps,"swap");
         displayStorage(piece2,x2,y2,x1,y1,steps,"swap");
     }
     else if(action=="rotate")
         { var rotatedPiece = boardStatus[index1].split('/')[2].split('.')[0];
           let directionOfPiece = orientationPawn[rotatedPiece];
-          localStorage.setItem(steps,"rotated at ("+x1+","+y1+") "+directionOfPiece+"/"+rotatedPiece);
+          localStorage.setItem(steps,"rotated at ("+(x1+1)+","+(y1+1)+") "+directionOfPiece+"/"+rotatedPiece);
           displayStorage(rotatedPiece,x1,y1,directionOfPiece,null,steps,"rotate");
         }
-}
 
+    undoCount = localStorage.length;
+}
+function removeUnnecessaryMoves()
+{
+
+}
 // from,to,rotated array
+var undoCount = localStorage.length;
 function undo()
 {
-   var data = localStorage.getItem(steps).split('/')[1];
-   var piece = localStorage.getItem(steps).split('/')[0];
-   var x1 = +data[1]-1;
-   var y1 = +data[3]-1;
-   var x2 = +data[10]-1;
-   var y2 = +data[12]-1;
-   var index1 = 8*x1+y1;
-   var index2 = 8*x2+y2;
-   selectedBoxClicked(index2,index1,true); // true indicates that this function is being called from redo or undo
-   revSteps--;
-   localStorage.setItem(revSteps,piece+"/"+"("+(x1+1)+","+(y1+1)+") to ("+(x2+1)+","+(y2+1)+")");
-   localStorage.removeItem(--steps);
-}
-
-function redo()
-{
-    var data = localStorage.getItem(revSteps);
+   var data = localStorage.getItem(undoCount);  // .split('/')[1];
+   // var piece = localStorage.getItem(steps).split('/')[0];
+   undoCount--;
+   if(data.indexOf("to")!=-1)
+    {
     var x1 = +data[1]-1;
     var y1 = +data[3]-1;
     var x2 = +data[10]-1;
     var y2 = +data[12]-1;
     var index1 = 8*x1+y1;
     var index2 = 8*x2+y2;
-    selectedBoxClicked(index1,index2,true); 
-    localStorage.removeItem(revSteps);
-    revSteps++;
-    
+    selectedBoxClicked(index2,index1,true);
+    }
+    else if(data.indexOf("swapped")!=-1)
+    {
+        let x1 = +data[1]-1;
+        let y1 = +data[3]-1;
+        let x2 = +data[10]-1;
+        let y2 = +data[12]-1;
+        let index1 = 8*x1+y1;
+        let index2 = 8*x2+y2;
+        selectedBoxesforSwap = [index1];
+        removeSvgMove(selectedBoxesforSwap);
+        doRicochetSwap(index2,index1,true);
+        addSvgMove(selectedBoxesforSwap);
+        selectedBoxesforSwap = []
+    }
+    else if(data.indexOf("rotated")!=-1)
+    {
+        
+    }
+    // true indicates that this function is being called from redo or undo
+//    revSteps--;
+//    localStorage.setItem(revSteps,piece+"/"+"("+(x1+1)+","+(y1+1)+") to ("+(x2+1)+","+(y2+1)+")");
+//    localStorage.removeItem(--steps);
+}
+
+function redo()
+{   undoCount++;
+    var data = localStorage.getItem(undoCount);
+    if(data.indexOf("to")!=-1)
+        {
+            var x1 = +data[1]-1;
+            var y1 = +data[3]-1;
+            var x2 = +data[10]-1;
+            var y2 = +data[12]-1;
+            var index1 = 8*x1+y1;
+            var index2 = 8*x2+y2;
+            selectedBoxClicked(index1,index2,true);
+        }
+     else if(data.indexOf("swapped")!=-1)
+        {
+            let x1 = +data[1]-1;
+            let y1 = +data[3]-1;
+            let x2 = +data[10]-1;
+            let y2 = +data[12]-1;
+            let index1 = 8*x1+y1;
+            let index2 = 8*x2+y2;
+            redoFn = ()=>{
+                setTimeout(()=>{
+                      move(index1);
+                      setTimeout(()=>{
+                        doRicochetSwap(index1,index2,false);
+                      },2000)
+                },2000)
+        }
+        }
 }
 
 function displayStorage(piece,x1,y1,x2,y2,steps,action)
@@ -1073,7 +1287,7 @@ function displayStorage(piece,x1,y1,x2,y2,steps,action)
         }
     else if(action=="rotate")
         {
-            data = "rotated "+x2+" at ("+x1+","+y1+")";
+            data = "rotated "+x2+" at ("+(x1+1)+","+(y1+1)+")";
         }
     if(piece.indexOf("red")!=-1)
         {
@@ -1247,13 +1461,16 @@ function doRicochetSwap(index,val,fromWhere)
             // can replace above two lines with gameChanceController
             shootBullet("black");
         }
-       saveToStorage(index,val,"swap");
-       makeSound("piecemove");
-       unlighten(selectedBoxes);
-       selectedBoxes = []
-       unlightenSwap(selectedBoxesforSwap);
-       selectedBoxesforSwap = [];
-       removerotateOptionsForRicoAndSemirico(index);
+        if(fromWhere==false)
+            {
+                saveToStorage(index,val,"swap");
+                makeSound("piecemove");
+                unlighten(selectedBoxes);
+                selectedBoxes = []
+                unlightenSwap(selectedBoxesforSwap);
+                selectedBoxesforSwap = [];
+                removerotateOptionsForRicoAndSemirico(index);
+            }
 } 
 function unlightenSwap()
 {
@@ -1315,11 +1532,15 @@ function rotateCanon(index,CanonDirection)
         }
    unlighten(selectedBoxes);
    changeChance();
+   saveToStorage(index,null,"rotate")
    removedirectionalBulletShootOption(index);
 }
 // hamburger menu for some stuffs 
 function removedirectionalBulletShootOption(index)
-{   isDirectionalBulletOptionPresent = false;
+{   if(isDirectionalBulletOptionPresent == false)
+    {
+        return;
+    }
     const playerNo = (boardStatus[index].indexOf("red")!=-1)?1:2;
     const parentDiv = document.getElementById("Player-"+playerNo+"-flex");
     const childDiv  = document.getElementById("rotateDivCanon");
@@ -1327,6 +1548,7 @@ function removedirectionalBulletShootOption(index)
     console.log(parentDiv);
     console.log(childDiv);
     console.log(message);
+    isDirectionalBulletOptionPresent = false;
     parentDiv.removeChild(childDiv);
     parentDiv.removeChild(message);
 }
@@ -1374,14 +1596,18 @@ function directionalBulletShootOption(index)
            parentDiv.appendChild(childDiv);
         }
 }
-function directionalBulletShoot(color)
-{
+// function directionalBulletShoot(color)
+// {
    
-}
-
-function destroySemiricochet()
+// }
+function destroySemiricochet(index)
 {
-
+    let semiricochet = document.getElementById(boardStatus[index].split('/')[2]);
+    let box = document.getElementById("box-"+(index+1));
+    box.removeChild(semiricochet);
+    let colour = (boardStatus[index].indexOf("red")!=-1)?"red":"black";
+    let destroyedPiece = boardStatus[index];
+    removeBullet(destroyedPiece,colour);
 }
 // anti=collision, movement logic
 // background music required
@@ -1391,31 +1617,47 @@ function destroySemiricochet()
 
 // a function which is able to take the orders of game replay and single_player_mode and take the necessary actions itself
 // winning strategy requires work
+let info = []
+let isReplayGoingOn = false;
 function game_replay()
 {
-    boardStatus = [];
-    boardStatus.push(...initial_config);
-    populateGrid();
-    for(let i in localStorage)
+     boardStatus = [];
+     boardStatus.push(...initial_config);
+     replayHappening = true;
+     unpopulateGrid();
+     populateGrid(); 
+     info = []
+     isReplayGoingOn = true;
+    for(let i=1;i<=localStorage.length;i++)
         {
             if(+i != NaN)
             {
-               console.log(i);
-               let info = localStorage.getItem(i);
-               compileMovementRequests(info);
+                console.log(i);
+                info.push(localStorage.getItem(i));
             }
         }
+        let c = 0;
+    var x = setInterval(()=>{
+        isReplayGoingOn = true;
+        compileMovementRequests(info[c]);
+        c++;
+        if(c>=info.length)
+            {   isReplayGoingOn = false;
+                clearInterval(x);
+                replayHappening = false;
+            }
+    },5000);
 }
 // synchronize all things
 function compileMovementRequests(info)
 {   let moveFunction;
     if(info.indexOf("to")!=-1)
         { 
-            //  "("+x1+","+y1+") to ("+x2+","+y2+")"+"/"+piece
-            let x1 = +info[1];
-            let y1 = +info[3];
-            let x2 = +info[10];
-            let y2 = +info[12];
+            //  "("+(x1+1)+","+(y1+1)+") to ("+(x2+1)+","+(y2+1)+")"+"/"+piece
+            let x1 = +info[1]-1;
+            let y1 = +info[3]-1;
+            let x2 = +info[10]-1;
+            let y2 = +info[12]-1;
             let index1 = 8*x1+y1;
             let index2 = 8*x2+y2;
             moveFunction = ()=>{
@@ -1423,16 +1665,16 @@ function compileMovementRequests(info)
                       move(index1);
                       setTimeout(()=>{
                         selectedBoxClicked(index1,index2,false);
-                      },1000)
-                },1000)
+                      },2000)
+                },2000)
         }
         }
     else if(info.indexOf("rotated")!=-1)
-        {  // "rotated at ("+x1+","+y1+") "+directionOfPiece+"/"+rotatedPiece
+        {  // "rotated at ("+(x1+1)+","+(y1+1)+") "+directionOfPiece+"/"+rotatedPiece
             let rotatedPiece = info.split('/')[1];
             let directionOfPiece = info.split('/')[0].split(' ')[3];
-            let x1 = +info[12];
-            let y1 = +info[14];
+            let x1 = +info[12]-1;
+            let y1 = +info[14]-1;
             let index1 = 8*x1+y1;
             if(rotatedPiece.indexOf('canon')!=-1)
                 {
@@ -1441,8 +1683,8 @@ function compileMovementRequests(info)
                             move(i);
                             setTimeout(()=>{
                                 rotateCanon(index1,directionOfPiece);
-                            },1000)
-                        },1000)
+                            },2000)
+                        },2000)
                     }
                 }
                 else if(rotatedPiece.indexOf('semiricochet')!=-1)
@@ -1454,8 +1696,8 @@ function compileMovementRequests(info)
                                         move(index1);
                                         setTimeout(()=>{
                                             rotatePieceup(index1);
-                                        },1000)
-                                    },1000)
+                                        },2000)
+                                    },2000)
                                 }
                             }
                         else if(directionOfPiece.indexOf("down")!=-1)
@@ -1465,8 +1707,8 @@ function compileMovementRequests(info)
                                         move(index1);
                                         setTimeout(()=>{
                                             rotatePiecedown(index1);
-                                        },1000)
-                                    },1000)
+                                        },2000)
+                                    },2000)
                                 }
                             }
                         else if(directionOfPiece.indexOf("right")!=-1)
@@ -1476,8 +1718,8 @@ function compileMovementRequests(info)
                                         move(index1);
                                         setTimeout(()=>{
                                             rotatePieceright(index1);
-                                        },1000)
-                                    },1000)
+                                        },2000)
+                                    },2000)
                                 }
                             }
                         else if(directionOfPiece.indexOf("left")!=-1)
@@ -1487,8 +1729,8 @@ function compileMovementRequests(info)
                                         move(index1);
                                         setTimeout(()=>{
                                             rotatePieceleft(index1);
-                                        },1000)
-                                    },1000)
+                                        },2000)
+                                    },2000)
                                 }
                             }
                     }
@@ -1501,8 +1743,8 @@ function compileMovementRequests(info)
                                     move(index1);
                                     setTimeout(()=>{
                                         rotatePieceright(index1);
-                                    },1000)
-                                },1000)
+                                    },2000)
+                                },2000)
                             }
                         }
                         else if(directionOfPiece.indexOf("left")!=-1)
@@ -1512,8 +1754,8 @@ function compileMovementRequests(info)
                                         move(index1);
                                         setTimeout(()=>{
                                             rotatePieceleft(index1);
-                                        },1000)
-                                    },1000)
+                                        },2000)
+                                    },2000)
                                 }
                             }
                 }
@@ -1521,11 +1763,11 @@ function compileMovementRequests(info)
         }
     else if(info.indexOf("swapped")!=-1)
         {  
-            // "("+x1+","+y1+") swapped to ("+x2+","+y2+")/"+piece+"/"+piece2
-            let x1 = +info[1];
-            let y1 = +info[3];
-            let x2 = +info[10];
-            let y2 = +info[12];
+            // "("+(x1+1)+","+(y1+1)+") swapped to ("+(x2+1)+","+(y2+1)+")/"+piece+"/"+piece2
+            let x1 = +info[1]-1;
+            let y1 = +info[3]-1;
+            let x2 = +info[10]-1;
+            let y2 = +info[12]-1;
             let index1 = 8*x1+y1;
             let index2 = 8*x2+y2;
             moveFunction = ()=>{
@@ -1533,8 +1775,8 @@ function compileMovementRequests(info)
                       move(index1);
                       setTimeout(()=>{
                         doRicochetSwap(index1,index2,false);
-                      },1000)
-                },1000)
+                      },2000)
+                },2000)
         }
         }
 
@@ -1830,6 +2072,6 @@ function showHistory()
 }
 function deleteHistory()
 {
-    
+
 }
 
