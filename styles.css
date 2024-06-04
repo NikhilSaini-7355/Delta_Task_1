@@ -230,3 +230,25 @@ border-style: solid;
     left: 0;
   }
 /* animations for selected boxes */
+.spell{
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 30%;
+    border-style: solid;
+    border-color: gold;
+    padding: 3px;
+}
+
+.animateSpell{
+    animation: spellAnimation 1s ;
+}
+@keyframes spellAnimation {
+    0%{
+        max-width: 100px;
+        max-height: 100px;
+    }
+    100%{
+        max-width: 110px;
+        max-height: 110px;
+    }
+}

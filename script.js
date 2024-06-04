@@ -526,7 +526,11 @@ function selectedBoxClicked(i,val,fromWhere)
                 removerotateOptionsForRicoAndSemirico(val);
             }
     }
-   saveToStorage(i,val,"move");
+   if(fromWhere==false)
+    {
+        saveToStorage(i,val,"move");
+    }
+
    makeSound("piecemove");
    unlighten(selectedBoxes);
    selectedBoxes = [];
@@ -679,6 +683,8 @@ function player2timer(status)
     let bullety = 0;
     let bullet_direction ;
 // Needs improvement
+let bulletPath = []
+let isBulletMoving = false;
 function moveBullet(index1,color,diff,direction)
 {
     console.log("the values are "+index1+"  "+color+"  "+diff+"  "+direction);
@@ -691,6 +697,7 @@ function moveBullet(index1,color,diff,direction)
     {   bullet_direction = "up"; let f = 0;
        setTimeout(()=>{
             bullety += -80*diff;
+            isBulletMoving = true;
             bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
         },500);
     }
@@ -698,6 +705,7 @@ function moveBullet(index1,color,diff,direction)
     {   bullet_direction = "down";
         setTimeout(()=>{
             bullety += moveMagnitude;
+            isBulletMoving = true;
             bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
         },500);
     }
@@ -705,6 +713,7 @@ function moveBullet(index1,color,diff,direction)
     {   bullet_direction = "right";
         setTimeout(()=>{
             bulletx += moveMagnitude;
+            isBulletMoving = true;
             bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
         },500);
     }
@@ -712,6 +721,7 @@ function moveBullet(index1,color,diff,direction)
     {   bullet_direction = "left";
         setTimeout(()=>{
         bulletx += -80*diff;
+        isBulletMoving = true;
         bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
     },500);
     }
@@ -720,6 +730,8 @@ function moveBullet(index1,color,diff,direction)
 // think about condition of non hitting anything also
 function calculateLeftBulletDifference(index1,color,direction)
 {    var diff; var index2; var ObjectHit;
+    console.log("bullet arrived here left");
+    console.log(index1+"  "+diff+"  "+color+"  "+direction);
      if(index1%8==0)
     {
         diff = 0;
@@ -727,7 +739,8 @@ function calculateLeftBulletDifference(index1,color,direction)
     else
     {  
         index2 = index1-1;
-         while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2] == redCanon ) && (index2+1)%8==0)
+        console.log((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2] == redCanon ) && (index2+1)%8==0)
+         while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2] == redCanon ) && (index2+1)%8!=0)
             {
                 index2 = index2 - 1;
             }
@@ -742,10 +755,32 @@ function calculateLeftBulletDifference(index1,color,direction)
                 }
             diff = (index1-index2);
     }
-    moveBullet(index1,color,diff,direction);
+    bulletPath.push({
+        startIndex : index1,
+        color: color,
+        diff : diff,
+        ObjectHit : ObjectHit,
+        direction : direction
+    })
+    bullet_direction = "left";
+    //moveBullet(index1,color,diff,direction);
+    //justaFn()
     hittingObject(ObjectHit,color);
 }
-
+function justaFn()
+{   let j = 0;
+    moveBullet(bulletPath[j].startIndex,bulletPath[j].color,bulletPath[j].diff,bulletPath[j].direction);
+       j++;
+   let x3 =  setInterval(()=>{
+    if(j>=bulletPath.length)
+        {
+            clearInterval(x3);
+        }
+       moveBullet(bulletPath[j].startIndex,bulletPath[j].color,bulletPath[j].diff,bulletPath[j].direction);
+       j++;
+       
+    },2000)
+}
 function calculateRightBulletDifference(index1,color,direction )
 {
     var diff; var index2; var ObjectHit;
@@ -772,7 +807,15 @@ function calculateRightBulletDifference(index1,color,direction )
                }  
            diff = (index2-index1);
    }
-   moveBullet(index1,color,diff,direction);
+   bulletPath.push({
+    startIndex : index1,
+    color: color,
+    diff : diff,
+    ObjectHit:ObjectHit,
+    direction : direction
+})
+   bullet_direction = "right";
+   //moveBullet(index1,color,diff,direction);
    hittingObject(ObjectHit,color);
 }
 
@@ -797,6 +840,7 @@ function calculateVerticalDifferenceForCanon(index1,color,direction)
                 }
             ObjectHit = boardStatus[index2];
             diff = (index1-index2)/8;
+            bullet_direction = "up";
         }
         else if(direction=="right")
             {
@@ -819,6 +863,7 @@ function calculateVerticalDifferenceForCanon(index1,color,direction)
                 }
                ObjectHit = boardStatus[index2];
                diff = (index2 - index1)/8;
+               bullet_direction = "down"
             }
     }
     else if(color == "black")
@@ -841,6 +886,7 @@ function calculateVerticalDifferenceForCanon(index1,color,direction)
                     ObjectHit = boardStatus[index2];
                 }
                diff = (index2 - index1)/8;
+               bullet_direction = "down";
             }
             else if(direction=="right")
                 {
@@ -867,10 +913,18 @@ function calculateVerticalDifferenceForCanon(index1,color,direction)
                             ObjectHit = boardStatus[index2];
                         }
                     diff = (index1-index2)/8;
+                    bullet_direction = "up";
                 }
         }
         // return [index1,index2,diff,ObjectHit];
-        moveBullet(index1,color,diff,direction);
+        bulletPath.push({
+            startIndex : index1,
+            color: color,
+            diff : diff,
+            direction : direction,
+            ObjectHit : ObjectHit
+        })
+       // moveBullet(index1,color,diff,direction);
         hittingObject(ObjectHit,color);
 }
 async function shootBullet(color)
@@ -886,68 +940,29 @@ async function shootBullet(color)
    var box = document.getElementById('box-'+(index+1));
     box.classList.add('imageWrapper');
     box.appendChild(bulletToAdd);
+    bulletPath = []
    //var [index1,index2,diff,ObjectHit] = calculateVericalDifferenceForCanon(index,color,direction);
    calculateVerticalDifferenceForCanon(index,color,direction);
-//    console.log("the values are"+index1+"  "+index2)
-//    var bullet = (color=="red")?('./assets/red-bullet.svg'):('./assets/black-bullet.svg');
-//    const svg = document.createElement("img");
-//    svg.setAttribute( 'width','80px');
-//    svg.setAttribute( 'height','80px');
-//    svg.setAttribute('src',bullet);
-//    svg.setAttribute('style',' align-content: center; ');
-//    if(color=="red")
-//     {
-//         index1 = index1-8;
-    
-//     var box = document.getElementById('box-'+(index1+1));
-//     box.appendChild(svg);
-//     makeSound("bulletshoot");
-//     var x = setInterval(function(){
-//          box.removeChild(svg);
-//         console.log("bullet fired")
-//         index1 = index1-8;
-//         if(index1<index2)
-//             {  hittingObject(ObjectHit);
-//                clearInterval(x);
-//             }
-//       box = document.getElementById('box-'+(index1+1));
-//       box.appendChild(svg);
-//       svg.setAttribute('style','transform: translateY(80px);')
-//     },250)
-//    // box.removeChild(svg);
-//     }
-//     else{
-//         index1 = index1+8;
-//         var box = document.getElementById('box-'+(index1+1));
-//         box.appendChild(svg);
-//         makeSound("bulletshoot");
-//         var x = setInterval(function(){
-//             box.removeChild(svg);
-//             console.log("bullet fired")
-//             index1 = index1+8;
-//             if(index1>index2)
-//                 {  hittingObject(ObjectHit);
-//                     console.log("came out")
-//                    clearInterval(x);
-//                 }
-//           box = document.getElementById('box-'+(index1+1));
-          
-//           box.appendChild(svg);
-//         },250)
 
-//     }
 }
 
 function hittingObject(ObjectHit,color)
 {   // multiple hits through rico and semirico
     // others == ignore or crash
     console.log(ObjectHit);
-    if(ObjectHit == null)
-        {
-            removeBullet(ObjectHit,color);
+    if(ObjectHit == null || ObjectHit=='')
+        {   
+            justaFn();
+            setTimeout(()=>{
+                removeBullet(ObjectHit,color);
+            },2000)
         }
+        
     else if(ObjectHit.indexOf("titan")!=-1)
-        {
+        {   justaFn();
+            setTimeout(()=>{
+                removeBullet(ObjectHit,color);
+            },2000)
             winningLogic(ObjectHit,color);
         }
     else if(ObjectHit.indexOf("tank")!=-1)
@@ -981,8 +996,11 @@ function hittingObject(ObjectHit,color)
 function removeBullet(ObjectHit,color)
 {
     let bulletToRemove = (color=="red")?(red_bullet):(black_bullet);
-    let containerBox = (color=="red")?(document.getElementById('box-'+(boardStatus.indexOf(redCanon))+1)):(document.getElementById('box-'+(boardStatus.indexOf(blackCanon))+1))
+    let containerBox = (color=="red")?(document.getElementById('box-'+((boardStatus.indexOf(redCanon))+1))):(document.getElementById('box-'+((boardStatus.indexOf(blackCanon))+1)))
+    console.log("before remove");
     containerBox.removeChild(bulletToRemove);
+    bulletToRemove.style.transform = `translate(0px, 0px)`;
+    console.log("after remove")
 }
 function ObjectHitTank(ObjectHit,color)
 {
@@ -993,13 +1011,18 @@ function ObjectHitTank(ObjectHit,color)
     }
     else
     {
-       removeBullet(ObjectHit,color)
+        justaFn();
+        setTimeout(()=>{
+            removeBullet(ObjectHit,color);
+        },2000)
     }
 }
 function ObjectHitRicochet(ObjectHit,color)
 {
     console.log(ObjectHit)
-    if(orientationPawn[ObjectHit]=="right")
+    hitPiece = ObjectHit.split('/')[2].split('.')[0]
+    console.log("orientation  :"+orientationPawn[hitPiece]);
+    if(orientationPawn[hitPiece]=="right")
         {
             if(bullet_direction=="right")
                 {
@@ -1018,7 +1041,7 @@ function ObjectHitRicochet(ObjectHit,color)
                     calculateRightBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
                 }
         }
-    else if(orientationPawn[ObjectHit]=="left")
+    else if(orientationPawn[hitPiece]=="left")
         {
             if(bullet_direction=="right")
                 {
@@ -1026,7 +1049,7 @@ function ObjectHitRicochet(ObjectHit,color)
                 }
             else if(bullet_direction=="down")
                 {
-                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
+                    calculateRightBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
                 }
             else if(bullet_direction=="left")
                 {
@@ -1034,7 +1057,7 @@ function ObjectHitRicochet(ObjectHit,color)
                 }
             else if(bullet_direction=="up")
                 {   console.log("bullet arrived here")
-                    calculateRightBulletDifference(boardStatus.indexOf(ObjectHit),color,"left");
+                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"left");
                 }
         }
 }
@@ -1042,10 +1065,15 @@ function ObjectHitRicochet(ObjectHit,color)
 function ObjectHitSemiRicochet(ObjectHit,color)
 {
     console.log(ObjectHit)
-    if(orientationPawn[ObjectHit]=="right")
+    hitPiece = ObjectHit.split('/')[2].split('.')[0]
+    console.log("orientation  :"+orientationPawn[hitPiece]);
+    if(orientationPawn[hitPiece]=="right")
         {
             if(bullet_direction=="right")
-                {
+                {   justaFn();
+                    setTimeout(()=>{
+                        removeBullet(ObjectHit,color);
+                    },2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit))
                 }
             else if(bullet_direction=="down")
@@ -1057,14 +1085,17 @@ function ObjectHitSemiRicochet(ObjectHit,color)
                     calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"up");
                 }
             else if(bullet_direction=="up")
-                { 
+                {   justaFn();
+                    setTimeout(()=>{
+                        removeBullet(ObjectHit,color);
+                    },2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit));
                 }
         }
-    else if(orientationPawn[ObjectHit]=="left")
+    else if(orientationPawn[hitPiece]=="left")
         {
             if(bullet_direction=="right")
-                {
+                {   
                     calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"up");
                 }
             else if(bullet_direction=="down")
@@ -1072,22 +1103,34 @@ function ObjectHitSemiRicochet(ObjectHit,color)
                     calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"left");
                 }
             else if(bullet_direction=="left")
-                {
+                {   justaFn();
+                    setTimeout(()=>{
+                        removeBullet(ObjectHit,color);
+                    },2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit));
                 }
             else if(bullet_direction=="up")
-                { 
+                {   justaFn();
+                    setTimeout(()=>{
+                        removeBullet(ObjectHit,color);
+                    },2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit));
                 }
         }
-    else if(orientationPawn[ObjectHit]=="down")
+    else if(orientationPawn[hitPiece]=="down")
         {
             if(bullet_direction=="right")
-                {
+                {   justaFn();
+                    setTimeout(()=>{
+                        removeBullet(ObjectHit,color);
+                    },2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit))
                 }
             else if(bullet_direction=="down")
-                {
+                {   justaFn();
+                    setTimeout(()=>{
+                        removeBullet(ObjectHit,color);
+                    },2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit));
                 }
             else if(bullet_direction=="left")
@@ -1099,18 +1142,24 @@ function ObjectHitSemiRicochet(ObjectHit,color)
                     calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
                 }
         }
-    else if(orientationPawn[ObjectHit]=="up")
+    else if(orientationPawn[hitPiece]=="up")
         {
             if(bullet_direction=="right")
                 {
                     calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"down");
                 }
             else if(bullet_direction=="down")
-                {
+                {   justaFn();
+                    setTimeout(()=>{
+                        removeBullet(ObjectHit,color);
+                    },2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit))
                 }
             else if(bullet_direction=="left")
-                {
+                {   justaFn();
+                    setTimeout(()=>{
+                        removeBullet(ObjectHit,color);
+                    },2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit))
                 }
             else if(bullet_direction=="up")
@@ -1162,6 +1211,7 @@ var steps = 0;
 var revSteps = 0;
 function saveToStorage(index1,index2,action)
 {   var piece;
+    removeUnnecessaryMoves();
     if(index2!=null)
      { //  piece = document.getElementById(boardStatus[index2].split('/')[2]);
         piece = boardStatus[index2].split('/')[2];
@@ -1194,12 +1244,20 @@ function saveToStorage(index1,index2,action)
 
     undoCount = localStorage.length;
 }
+var undoCount = localStorage.length;
 function removeUnnecessaryMoves()
 {
-
+   if(undoCount<steps) // localStorage.length is equal to steps 
+    {
+       for(let v=undoCount+1;v<=steps;v++)
+        {
+            localStorage.removeItem(v);
+        }
+        steps = localStorage.length;
+    }
 }
 // from,to,rotated array
-var undoCount = localStorage.length;
+// gamechange even after undo
 function undo()
 {
    var data = localStorage.getItem(undoCount);  // .split('/')[1];
@@ -1219,8 +1277,8 @@ function undo()
     {
         let x1 = +data[1]-1;
         let y1 = +data[3]-1;
-        let x2 = +data[10]-1;
-        let y2 = +data[12]-1;
+        let x2 = +data[18]-1;
+        let y2 = +data[20]-1;
         let index1 = 8*x1+y1;
         let index2 = 8*x2+y2;
         selectedBoxesforSwap = [index1];
@@ -1231,7 +1289,7 @@ function undo()
     }
     else if(data.indexOf("rotated")!=-1)
     {
-        
+        console.log("undo rotated");
     }
     // true indicates that this function is being called from redo or undo
 //    revSteps--;
@@ -1240,7 +1298,11 @@ function undo()
 }
 
 function redo()
-{   undoCount++;
+{   if(undoCount==localStorage.length)
+    {
+        return;
+    }
+    undoCount++;
     var data = localStorage.getItem(undoCount);
     if(data.indexOf("to")!=-1)
         {
@@ -1256,19 +1318,24 @@ function redo()
         {
             let x1 = +data[1]-1;
             let y1 = +data[3]-1;
-            let x2 = +data[10]-1;
-            let y2 = +data[12]-1;
+            let x2 = +data[18]-1;
+            let y2 = +data[20]-1;
             let index1 = 8*x1+y1;
             let index2 = 8*x2+y2;
-            redoFn = ()=>{
+          let  redoFn = ()=>{
                 setTimeout(()=>{
                       move(index1);
                       setTimeout(()=>{
-                        doRicochetSwap(index1,index2,false);
-                      },2000)
-                },2000)
+                        doRicochetSwap(index1,index2,true);
+                      },1000)
+                },1000)
         }
+        redoFn();
         }
+        else if(data.indexOf("rotated")!=-1)
+            {
+                console.log("redo rotated");
+            }
 }
 
 function displayStorage(piece,x1,y1,x2,y2,steps,action)
@@ -1404,7 +1471,7 @@ function lightenSwap(index)
             "eventListener":eventhandlerSwap
         }
     })
-   
+// direction issue in undo and redo
 }
 function doRicochetSwap(index,val,fromWhere)
 {
@@ -1766,8 +1833,8 @@ function compileMovementRequests(info)
             // "("+(x1+1)+","+(y1+1)+") swapped to ("+(x2+1)+","+(y2+1)+")/"+piece+"/"+piece2
             let x1 = +info[1]-1;
             let y1 = +info[3]-1;
-            let x2 = +info[10]-1;
-            let y2 = +info[12]-1;
+            let x2 = +info[18]-1;
+            let y2 = +info[20]-1;
             let index1 = 8*x1+y1;
             let index2 = 8*x2+y2;
             moveFunction = ()=>{
@@ -2060,9 +2127,18 @@ function generateMoveRandomly()
     let randomFunction = allPossibleOptions[randomNo];
     randomFunction();
 }
-function spells()
-{
 
+spells = [
+    {
+        spellName:"P-1-Spell-1"
+    },
+    {
+        spellName:"P-1-Spell-2"
+    }
+]
+function applySpells(spellData)
+{
+   
 }
 
 // animations
@@ -2074,4 +2150,6 @@ function deleteHistory()
 {
 
 }
+
+// types of spells
 
