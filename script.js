@@ -265,7 +265,7 @@ function rotateOptionsForRicoAndSemirico(index)
     const message = document.createElement("div");
     message.setAttribute("id","rotateMessage");
     message.innerHTML = (boardStatus[index].split("/")[2]).split(".")[0];
-    if(parentDiv.childElementCount==2)
+    if(parentDiv.childElementCount==5)
         {
            parentDiv.appendChild(message);
            parentDiv.appendChild(childDiv);
@@ -344,19 +344,19 @@ function removeUnnecessaryDiv(i)
     if(boardStatus[i].indexOf("red")!=-1)
         {
             parentDiv = document.getElementById("Player-1-flex");
-            if(parentDiv.childElementCount==4)
+            if(parentDiv.childElementCount==7)
                 {
-                    parentDiv.removeChild(parentDiv.children[3]);
-                    parentDiv.removeChild(parentDiv.children[2]);
+                    parentDiv.removeChild(parentDiv.children[6]);
+                    parentDiv.removeChild(parentDiv.children[5]);
                 }
         }
         else
         {
             parentDiv = document.getElementById("Player-2-flex");
-            if(parentDiv.childElementCount==4)
+            if(parentDiv.childElementCount==7)
                 {
-                    parentDiv.removeChild(parentDiv.children[3]);
-                    parentDiv.removeChild(parentDiv.children[2]);
+                    parentDiv.removeChild(parentDiv.children[6]);
+                    parentDiv.removeChild(parentDiv.children[5]);
                 }
         }
     isDirectionalBulletOptionPresent = false;
@@ -577,8 +577,8 @@ if(status==0)
                         player1time++;
                     }
                 
-                minutes = 0;
-                var seconds = player1time;
+                minutes = Math.floor(player1time/60);
+                var seconds = player1time%60;
              //   console.log("status is 1-1")
              if(isReplayGoingOn==true)
                 {
@@ -627,8 +627,8 @@ function player2timer(status)
                     }
                 //var distance = countDownDate - now;
             //    console.log("status is 0-2")
-                  minutes = 0;
-                  var seconds = player2time;
+            minutes = Math.floor(player2time/60);
+            var seconds = player2time%60;
                   if(isReplayGoingOn==true)
                     {
                         document.getElementById("Player-1-timer").innerHTML = "Replay Going On"
@@ -1657,7 +1657,7 @@ function directionalBulletShootOption(index)
     const message = document.createElement("div");
     message.setAttribute("id","rotateCanonMessage");
     message.innerHTML = (boardStatus[index].split("/")[2]).split(".")[0];
-    if(parentDiv.childElementCount==2)
+    if(parentDiv.childElementCount==5)
         {
            parentDiv.appendChild(message);
            parentDiv.appendChild(childDiv);
@@ -2128,19 +2128,97 @@ function generateMoveRandomly()
     randomFunction();
 }
 
-spells = [
+let spells = [
     {
-        spellName:"P-1-Spell-1"
+        spellName:"P-1-PassThroughPiece",
+        spellUnit : 2
     },
     {
-        spellName:"P-1-Spell-2"
+        spellName:"P-1-SaveTitan",
+        spellUnit : 2
+    },
+    {
+        spellName:"P-1-AddTime",
+        spellUnit : 2
+    },
+    {
+        spellName:"P-2-PassThroughPiece",
+        spellUnit : 2
+    },
+    {
+        spellName:"P-2-SaveTitan",
+        spellUnit : 2
+    },
+    {
+        spellName:"P-2-AddTime",
+        spellUnit : 2
     }
 ]
-function applySpells(spellData)
+
+// spell in undo redo replay single_Player savestorage displaystorage 
+function applySpells(spellName)
 {
-   
+   let spell;
+   for(let v in spells)
+    {
+        if(spells[v].spellName==spellName)
+            {
+                spell = spells[v];
+                break;
+            }
+    }
+    if(spell.spellUnit==0)
+        {
+            return;
+        }
+        else
+        {
+            spell.spellUnit--;
+            removeStar(spell.spellName);
+            let playerNumber = spellName[2];
+            if(spellName.indexOf("PassThroughPiece")!=-1)
+                {
+                    spellPassThroughPiece(playerNumber)
+                }
+            else if(spellName.indexOf("SaveTitan")!=-1)
+                {
+                    spellSaveTitan(playerNumber)
+                }
+            else if(spellName.indexOf("AddTime")!=-1)
+                {
+                    spellAddTime(playerNumber)
+                }
+        }
 }
 
+// my own custom alert box
+function spellPassThroughPiece(playerNumber)
+{
+
+}
+
+function spellSaveTitan(playerNumber)
+{
+    
+}
+
+function spellAddTime(playerNumber)
+{
+    if(+playerNumber == 1)
+        {
+            player1time += 60;
+        }
+    else if(+playerNumber == 2)
+        {
+            player2time += 60;
+        }
+}
+function removeStar(spellId)
+{
+   let containerId = spellId + "-container";
+   let spellContainer = document.getElementById(containerId);
+   spellContainer.removeChild(spellContainer.children[spellContainer.children.length-1]);
+}
 // animations
 function showHistory()
 {
@@ -2150,6 +2228,5 @@ function deleteHistory()
 {
 
 }
-
 // types of spells
 

@@ -26,28 +26,40 @@
     <div id="Player-1-flex">
         <div id="Player-1"><div id="Player-1-name">Hello</div></div>
         <div id="Player-1-timer"></div>
-        <div id="P-1-Spell-1-container">
-            <img src="./assets/spell1.png" id="P-1-Spell-1" class="spell" onclick="applySpells('P-1-Spell-1')">
+        <div id="P-1-PassThroughPiece-container">
+            <img src="./assets/spell1.png" id="P-1-PassThroughPiece" class="spell" onclick="applySpells('P-1-PassThroughPiece')">
+            <img src="./assets/red_star.svg" id="red_star-1-1-1" class="star">
+            <img src="./assets/red_star.svg" id="red_star-1-1-2" class="star">
         </div>
-        <div id="P-1-Spell-2-container">
-            <img src="./assets/spell2.png" id="P-1-Spell-2" class="spell" onclick="applySpells('P-1-Spell-2')">
+        <div id="P-1-SaveTitan-container">
+            <img src="./assets/spell2.png" id="P-1-SaveTitan" class="spell" onclick="applySpells('P-1-SaveTitan')">
+            <img src="./assets/red_star.svg" id="red_star-1-2-1" class="star">
+            <img src="./assets/red_star.svg" id="red_star-1-2-2" class="star">
         </div>
-        <div id="P-1-Spell-3-container">
-            <img src="./assets/spell3.png" id="P-1-Spell-3" class="spell" onclick="applySpells('P-1-Spell-3')">
+        <div id="P-1-AddTime-container">
+            <img src="./assets/spell3.png" id="P-1-AddTime" class="spell" onclick="applySpells('P-1-AddTime')">
+            <img src="./assets/red_star.svg" id="red_star-1-3-1" class="star">
+            <img src="./assets/red_star.svg" id="red_star-1-3-2" class="star">
         </div>
     </div>
     <div id="grid-Container"> </div>
     <div id="Player-2-flex">
         <div id="Player-2"><div id="Player-2-name">Pamello</div></div>
         <div id="Player-2-timer" ></div>
-        <div id="P-2-Spell-1-container">
-            <img src="./assets/spell1.png" id="P-2-Spell-1" class="spell" onclick="applySpells('P-2-Spell-1')">
+        <div id="P-2-PassThroughPiece-container">
+            <img src="./assets/spell1.png" id="P-2-PassThroughPiece" class="spell" onclick="applySpells('P-2-PassThroughPiece')">
+            <img src="./assets/black_star.svg" id="red_star-2-1-1" class="star">
+            <img src="./assets/black_star.svg" id="red_star-2-1-2" class="star">
         </div>
-        <div id="P-2-Spell-2-container">
-            <img src="./assets/spell2.png" id="P-2-Spell-2" class="spell" onclick="applySpells('P-2-Spell-2')">
+        <div id="P-2-SaveTitan-container">
+            <img src="./assets/spell2.png" id="P-2-SaveTitan" class="spell" onclick="applySpells('P-2-SaveTitan')">
+            <img src="./assets/black_star.svg" id="red_star-2-2-1" class="star">
+            <img src="./assets/black_star.svg" id="red_star-2-2-2" class="star">
         </div>
-        <div id="P-2-Spell-3-container">
-            <img src="./assets/spell3.png" id="P-2-Spell-3" class="spell" onclick="applySpells('P-2-Spell-3')">
+        <div id="P-2-AddTime-container">
+            <img src="./assets/spell3.png" id="P-2-AddTime" class="spell" onclick="applySpells('P-2-AddTime')">
+            <img src="./assets/black_star.svg" id="red_star-2-3-1" class="star">
+            <img src="./assets/black_star.svg" id="red_star-2-3-2" class="star">
         </div>
     </div>
     </div>
@@ -72,7 +84,6 @@
         <button onclick="resetGame()">Reset</button>
         <button onclick="game_replay()">Replay</button>
         <button onclick="deleteHistory()">deleteHistory</button>
-        <button onclick="moveBullet(63,'red',7,'up')">moveup</button>
       </div>
    </div>
 </body>
