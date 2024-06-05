@@ -730,6 +730,7 @@ function moveBullet(index1,color,diff,direction)
 // think about condition of non hitting anything also
 function calculateLeftBulletDifference(index1,color,direction)
 {    var diff; var index2; var ObjectHit;
+    let selectedPassThroughPieces = [spells[0].selectedPiece,spells[3].selectedPiece];
     console.log("bullet arrived here left");
     console.log(index1+"  "+diff+"  "+color+"  "+direction);
      if(index1%8==0)
@@ -740,7 +741,7 @@ function calculateLeftBulletDifference(index1,color,direction)
     {  
         index2 = index1-1;
         console.log((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2] == redCanon ) && (index2+1)%8==0)
-         while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2] == redCanon ) && (index2+1)%8!=0)
+         while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2] == redCanon || boardStatus[index2]==selectedPassThroughPieces[0] || boardStatus[index2]==selectedPassThroughPieces[1]) && (index2+1)%8!=0)
             {
                 index2 = index2 - 1;
             }
@@ -784,14 +785,15 @@ function justaFn()
 function calculateRightBulletDifference(index1,color,direction )
 {
     var diff; var index2; var ObjectHit;
+    let selectedPassThroughPieces = [spells[0].selectedPiece,spells[3].selectedPiece];
     if((index1+1)%8==0)
    {
        diff = 0;
    }
    else
-   {
+   {   // canon to be considered hit or not ignored . We have to think about it 
        index2 = index1+1;
-        while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2] == redCanon ) && index2%8!=0)
+        while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2] == redCanon || boardStatus[index2]==selectedPassThroughPieces[0] || boardStatus[index2]==selectedPassThroughPieces[1]) && index2%8!=0)
            {
                index2 = index2 + 1;
            }
@@ -823,14 +825,15 @@ function calculateVerticalDifferenceForCanon(index1,color,direction)
 {  var diff ; // var index1;
    // please check - removing the outermost condition 
    // if bullet hits canon what to do
-     var index2; var ObjectHit = '';
+     var index2; var ObjectHit = ''; let selectedPassThroughPieces = [spells[0].selectedPiece,spells[3].selectedPiece];
    if(color == "red")
     {     if(direction=="up")
         {
 
           // index1 = boardStatus.indexOf(redCanon);
           index2 = index1-8;
-         while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon ) && index2>=0)
+          
+         while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2]==selectedPassThroughPieces[0] || boardStatus[index2]==selectedPassThroughPieces[1] ) && index2>=0)
             {
                 index2 = index2 - 8;
             }
@@ -853,7 +856,7 @@ function calculateVerticalDifferenceForCanon(index1,color,direction)
         else if(direction=="down")
             {
              index2 = index1+8;
-            while((boardStatus[index2]==''|| boardStatus[index2]==redCanon) && index2<=63)
+            while((boardStatus[index2]==''|| boardStatus[index2]==redCanon || boardStatus[index2]==selectedPassThroughPieces[0] || boardStatus[index2]==selectedPassThroughPieces[1]) && index2<=63)
                {
                    index2 = index2 + 8;
                }
@@ -872,7 +875,7 @@ function calculateVerticalDifferenceForCanon(index1,color,direction)
             {
             // index1 = boardStatus.indexOf(blackCanon);
              index2 = index1+8;
-            while((boardStatus[index2]==''|| boardStatus[index2]==redCanon) && index2<=63)
+            while((boardStatus[index2]==''|| boardStatus[index2]==redCanon || boardStatus[index2]==selectedPassThroughPieces[0] || boardStatus[index2]==selectedPassThroughPieces[1]) && index2<=63)
                {
                    index2 = index2 + 8;
                }
@@ -899,7 +902,7 @@ function calculateVerticalDifferenceForCanon(index1,color,direction)
             else if(direction=="up")
                 {
                   index2 = index1-8;
-                 while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon ) && index2>=0)
+                 while((boardStatus[index2]==''|| boardStatus[index2]==blackCanon || boardStatus[index2]==selectedPassThroughPieces[0] || boardStatus[index2]==selectedPassThroughPieces[1]) && index2>=0)
                     {
                         index2 = index2 - 8;
                     }
@@ -981,13 +984,13 @@ function hittingObject(ObjectHit,color)
 }
    function winningLogic(ObjectHit,color)
 {   console.log(ObjectHit);
-   if(ObjectHit.indexOf("black")!=-1 && color == "red")
+   if(ObjectHit.indexOf("black")!=-1 && color == "red" && spells[4].isSaving == false)
     {   
         makeSound("gameover");
         playerWon = "red"
         alert("red won");
     }
-    else if(ObjectHit.indexOf("red")!=-1 && color == "black")
+    else if(ObjectHit.indexOf("red")!=-1 && color == "black" && spells[1].isSaving == false)
     {   playerwon = "black"
         makeSound("gameover");
         alert("black won");
@@ -2131,11 +2134,13 @@ function generateMoveRandomly()
 let spells = [
     {
         spellName:"P-1-PassThroughPiece",
-        spellUnit : 2
+        spellUnit : 2,
+        selectedPiece : null
     },
     {
         spellName:"P-1-SaveTitan",
-        spellUnit : 2
+        spellUnit : 2,
+        isSaving : false
     },
     {
         spellName:"P-1-AddTime",
@@ -2143,11 +2148,13 @@ let spells = [
     },
     {
         spellName:"P-2-PassThroughPiece",
-        spellUnit : 2
+        spellUnit : 2 ,
+        selectedPiece : null
     },
     {
         spellName:"P-2-SaveTitan",
-        spellUnit : 2
+        spellUnit : 2,
+        isSaving : false
     },
     {
         spellName:"P-2-AddTime",
@@ -2190,16 +2197,49 @@ function applySpells(spellName)
                 }
         }
 }
-
+// good documentation required 
 // my own custom alert box
 function spellPassThroughPiece(playerNumber)
 {
-
+   let PassThroughPieceNo =  prompt("which piece No");
+   if(+playerNumber == 1)
+    {
+       spells[0].selectedPiece = boardStatus[PassThroughPieceNo-1];
+       setTimeout(()=>{
+        spells[0].selectedPiece = null;
+        console.log("spell removed 1")
+        // show timer
+        // some kind of highlight on the piece as well indicating effect of spell
+       },90000) // after 90 seconds spell's effect will be over 
+    }
+    else if(+playerNumber == 2)
+    {
+       spells[3].selectedPiece = boardStatus[PassThroughPieceNo-1];
+       setTimeout(()=>{
+        spells[3].selectedPiece = null;
+        console.log("spell removed 2")
+        // show timer 
+       },90000)
+    }
 }
 
+// some kind of divine highlighting to show that the spell is in use 
 function spellSaveTitan(playerNumber)
 {
-    
+    if(+playerNumber == 1)
+        {
+           spells[1].isSaving = true;
+           setTimeout(() => {
+               spells[1].isSaving = false;
+           }, 90000); // saving the titan for 90 seconds
+        } // highlight also
+    else if(+playerNumber == 2)
+        {
+           spells[4].isSaving = true;
+           setTimeout(() => {
+                spells[4].isSaving = false;
+            }, 90000); // saving the titan for 90 seconds
+        } // highlight also
 }
 
 function spellAddTime(playerNumber)
