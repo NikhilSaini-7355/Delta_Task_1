@@ -283,6 +283,14 @@ function rotatePieceleft(index)
    unlighten(selectedBoxes);
    changeChance();
    saveToStorage(index,null,"rotate");
+   if(boardStatus[index].indexOf("red")!=-1)
+    {
+        shootBullet("red");
+    }
+    else
+    {
+        shootBullet("black");
+    }
    removerotateOptionsForRicoAndSemirico(index);
 }
 
@@ -298,6 +306,14 @@ function rotatePieceright(index)
    unlighten(selectedBoxes);
    changeChance();
    saveToStorage(index,null,"rotate");
+   if(boardStatus[index].indexOf("red")!=-1)
+    {
+        shootBullet("red");
+    }
+    else
+    {
+        shootBullet("black");
+    }
    removerotateOptionsForRicoAndSemirico(index);
 }
 
@@ -314,6 +330,14 @@ function rotatePieceup(index)
    unlighten(selectedBoxes);
    changeChance();
    saveToStorage(index,null,"rotate");
+   if(boardStatus[index].indexOf("red")!=-1)
+    {
+        shootBullet("red");
+    }
+    else
+    {
+        shootBullet("black");
+    }
    removerotateOptionsForRicoAndSemirico(index);
 }
 
@@ -336,6 +360,14 @@ function rotatePiecedown(index)
    unlighten(selectedBoxes);
    changeChance();
    saveToStorage(index,null,"rotate");
+   if(boardStatus[index].indexOf("red")!=-1)
+    {
+        shootBullet("red");
+    }
+    else
+    {
+        shootBullet("black");
+    }
    removerotateOptionsForRicoAndSemirico(index);
 }
 
@@ -699,7 +731,7 @@ function moveBullet(index1,color,diff,direction)
             bullety += -80*diff;
             isBulletMoving = true;
             bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
-        },500);
+        },100);
     }
     else if(direction=="down")
     {   bullet_direction = "down";
@@ -707,7 +739,7 @@ function moveBullet(index1,color,diff,direction)
             bullety += moveMagnitude;
             isBulletMoving = true;
             bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
-        },500);
+        },100);
     }
     else if(direction=="right")
     {   bullet_direction = "right";
@@ -715,7 +747,7 @@ function moveBullet(index1,color,diff,direction)
             bulletx += moveMagnitude;
             isBulletMoving = true;
             bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
-        },500);
+        },100);
     }
     else if(direction=="left")
     {   bullet_direction = "left";
@@ -723,7 +755,7 @@ function moveBullet(index1,color,diff,direction)
         bulletx += -80*diff;
         isBulletMoving = true;
         bullet.style.transform = `translate(${bulletx}px, ${bullety}px)`;
-    },500);
+    },200);
     }
     return;
 }
@@ -930,7 +962,7 @@ function calculateVerticalDifferenceForCanon(index1,color,direction)
        // moveBullet(index1,color,diff,direction);
         hittingObject(ObjectHit,color);
 }
-async function shootBullet(color)
+function shootBullet(color)
 {  var canon = (color=="red")?redCanon:blackCanon;
    bulletx = 0;
    bullety = 0;
@@ -943,6 +975,7 @@ async function shootBullet(color)
    var box = document.getElementById('box-'+(index+1));
     box.classList.add('imageWrapper');
     box.appendChild(bulletToAdd);
+    bulletToAdd.style.transform = `translate(0px, 0px)`;
     bulletPath = []
    //var [index1,index2,diff,ObjectHit] = calculateVericalDifferenceForCanon(index,color,direction);
    calculateVerticalDifferenceForCanon(index,color,direction);
@@ -958,28 +991,28 @@ function hittingObject(ObjectHit,color)
             justaFn();
             setTimeout(()=>{
                 removeBullet(ObjectHit,color);
-            },2000)
+            },bulletPath.length*2000)
         }
         
     else if(ObjectHit.indexOf("titan")!=-1)
         {   justaFn();
             setTimeout(()=>{
                 removeBullet(ObjectHit,color);
-            },2000)
+            },bulletPath.length*2000)
             winningLogic(ObjectHit,color);
         }
     else if(ObjectHit.indexOf("tank")!=-1)
         {
             ObjectHitTank(ObjectHit,color);
         }
-    else if(ObjectHit.indexOf("ricochet")!=-1)
-        {
-            ObjectHitRicochet(ObjectHit,color);
-        }
     else if(ObjectHit.indexOf("semiricochet")!=-1)
         {
             ObjectHitSemiRicochet(ObjectHit,color);
         }
+    else if(ObjectHit.indexOf("ricochet")!=-1)
+            {
+                ObjectHitRicochet(ObjectHit,color);
+            }
         
 }
    function winningLogic(ObjectHit,color)
@@ -1017,7 +1050,7 @@ function ObjectHitTank(ObjectHit,color)
         justaFn();
         setTimeout(()=>{
             removeBullet(ObjectHit,color);
-        },2000)
+        },bulletPath.length*2000)
     }
 }
 function ObjectHitRicochet(ObjectHit,color)
@@ -1076,12 +1109,12 @@ function ObjectHitSemiRicochet(ObjectHit,color)
                 {   justaFn();
                     setTimeout(()=>{
                         removeBullet(ObjectHit,color);
-                    },2000)
+                    },bulletPath.length*2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit))
                 }
             else if(bullet_direction=="down")
                 {
-                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
+                    calculateRightBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
                 }
             else if(bullet_direction=="left")
                 {
@@ -1091,7 +1124,7 @@ function ObjectHitSemiRicochet(ObjectHit,color)
                 {   justaFn();
                     setTimeout(()=>{
                         removeBullet(ObjectHit,color);
-                    },2000)
+                    },bulletPath.length*2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit));
                 }
         }
@@ -1099,7 +1132,7 @@ function ObjectHitSemiRicochet(ObjectHit,color)
         {
             if(bullet_direction=="right")
                 {   
-                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"up");
+                    calculateVerticalBulletDifference(boardStatus.indexOf(ObjectHit),color,"up");
                 }
             else if(bullet_direction=="down")
                 {
@@ -1109,14 +1142,14 @@ function ObjectHitSemiRicochet(ObjectHit,color)
                 {   justaFn();
                     setTimeout(()=>{
                         removeBullet(ObjectHit,color);
-                    },2000)
+                    },bulletPath.length*2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit));
                 }
             else if(bullet_direction=="up")
                 {   justaFn();
                     setTimeout(()=>{
                         removeBullet(ObjectHit,color);
-                    },2000)
+                    },bulletPath.length*2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit));
                 }
         }
@@ -1126,14 +1159,14 @@ function ObjectHitSemiRicochet(ObjectHit,color)
                 {   justaFn();
                     setTimeout(()=>{
                         removeBullet(ObjectHit,color);
-                    },2000)
+                    },bulletPath.length*2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit))
                 }
             else if(bullet_direction=="down")
                 {   justaFn();
                     setTimeout(()=>{
                         removeBullet(ObjectHit,color);
-                    },2000)
+                    },bulletPath.length*2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit));
                 }
             else if(bullet_direction=="left")
@@ -1142,7 +1175,7 @@ function ObjectHitSemiRicochet(ObjectHit,color)
                 }
             else if(bullet_direction=="up")
                 { 
-                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
+                    calculateRightBulletDifference(boardStatus.indexOf(ObjectHit),color,"right");
                 }
         }
     else if(orientationPawn[hitPiece]=="up")
@@ -1155,19 +1188,19 @@ function ObjectHitSemiRicochet(ObjectHit,color)
                 {   justaFn();
                     setTimeout(()=>{
                         removeBullet(ObjectHit,color);
-                    },2000)
+                    },bulletPath.length*2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit))
                 }
             else if(bullet_direction=="left")
                 {   justaFn();
                     setTimeout(()=>{
                         removeBullet(ObjectHit,color);
-                    },2000)
+                    },bulletPath.length*2000)
                     destroySemiricochet(boardStatus.indexOf(ObjectHit))
                 }
             else if(bullet_direction=="up")
                 { 
-                    calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"left");
+                    calculateLeftDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"left");
                 }
         }
 }
@@ -1205,9 +1238,13 @@ function changeChance()
     if(gameChance=="red")
         {
             gameChance = "black";
+            player1timer(0);  // new additions
+            player2timer(1);  // new additions 
         }
       else{
-        gameChance = "red"
+        gameChance = "red";
+        player1timer(1);
+        player2timer(0);
       }
 }
 var steps = 0;
@@ -1602,7 +1639,15 @@ function rotateCanon(index,CanonDirection)
         }
    unlighten(selectedBoxes);
    changeChance();
-   saveToStorage(index,null,"rotate")
+   saveToStorage(index,null,"rotate");
+   if(boardStatus[index].indexOf("red")!=-1)
+    {
+        shootBullet("red");
+    }
+    else
+    {
+        shootBullet("black");
+    }
    removedirectionalBulletShootOption(index);
 }
 // hamburger menu for some stuffs 
@@ -1671,13 +1716,15 @@ function directionalBulletShootOption(index)
    
 // }
 function destroySemiricochet(index)
-{
+{   console.log("semiricochet destroyed")
     let semiricochet = document.getElementById(boardStatus[index].split('/')[2]);
     let box = document.getElementById("box-"+(index+1));
     box.removeChild(semiricochet);
     let colour = (boardStatus[index].indexOf("red")!=-1)?"red":"black";
     let destroyedPiece = boardStatus[index];
-    removeBullet(destroyedPiece,colour);
+    setTimeout(()=>{
+        removeBullet(destroyedPiece,colour);
+    },bulletPath.length*2000);    
 }
 // anti=collision, movement logic
 // background music required
