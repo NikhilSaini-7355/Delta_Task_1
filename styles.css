@@ -39,7 +39,13 @@
     justify-content: space-between;
     align-items: center;
 }
-
+#grid-border{
+    background-color: rgb(150, 111, 51);
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    
+}
 #grid-Container{
      display: grid;
      grid-template-columns: auto auto auto auto auto auto auto auto;
@@ -137,6 +143,7 @@
    border-style: solid;
    border-color: rgba(255, 255, 0, 1);
    border-width: 15px;
+   background-image: -webkit-linear-gradient(45deg,blue,lightblue);
 }
 
 #Players-History{
@@ -185,6 +192,8 @@
 border-style: solid;
    border-color: rgba(255, 0, 0, 1);
    border-width: 15px;
+   background-image: -webkit-linear-gradient(0deg,darkmagenta,pink);
+   /* background-color: darkmagenta; */
 }
 
 .rotateDiv{
@@ -238,6 +247,7 @@ border-style: solid;
     border-color: gold;
     padding: 3px;
     padding-right: 2px;
+    /* background-color: goldenrod; */
 }
 
 .star{
@@ -257,3 +267,4 @@ border-style: solid;
         max-height: 110px;
     }
 }
+

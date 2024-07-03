@@ -1,0 +1,182 @@
+/* General Styles */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Jacquard 24', sans-serif;
+    box-sizing: border-box;
+    height: 100%;
+}
+
+#background {
+    background-image: url('./assets/Background2.jpg'); 
+    background-size: cover;
+    height: 100%;
+}
+
+.backgroundDiv {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.HeadingFlex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    width: 100%;
+}
+
+#Heading {
+    display: flex;
+    flex-direction: column;
+    background-image: url('./assets/trace.svg');
+    background-size: cover;
+    font-size: 2rem;
+    height: 100px;
+    width: 100%;
+    text-align: center;
+}
+
+#HeadingName {
+    padding-top: 30px;
+    font-family: "Jacquard 24", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 2rem;
+    color: gold;
+}
+
+/* Playing Section */
+#playingSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+}
+
+#Player-1-flex, #Player-2-flex {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+#Player-1, #Player-2 {
+    display: flex;
+    flex-direction: column;
+    background-image: url('./assets/trace.svg');
+    background-size: cover;
+    font-size: 1.5rem;
+    text-align: center;
+    width: 100%;
+}
+
+#Player-1-name, #Player-2-name {
+    padding-top: 20px;
+    font-family: "Jacquard 24", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    color: gold;
+}
+
+#grid-border {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px 0;
+    background-color: rgb(150, 111, 51);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#grid-Container {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    width: 100%;
+    padding-top: 100%;
+    position: relative;
+}
+
+#Player-1-timer, #Player-2-timer {
+    background-color: white;
+    border: solid black;
+    width: auto;
+    padding: 10px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+}
+
+#Players-History {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 10px;
+    width: 100%;
+}
+
+#Player-1-history, #Player-2-history {
+    flex-basis: 35%;
+    background-color: rgba(255, 0, 0, 0.5);
+    width: 50%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: 200px;
+}
+
+#Player-2-history {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: beige;
+}
+
+#first-three-btn, #last-three-btn {
+    flex-basis: 15%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+button {
+    padding: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.spell, .star {
+    max-width: 80px;
+    max-height: 80px;
+    margin: 5px;
+}
+
+.spell {
+    border-radius: 20%;
+    border: solid gold;
+    padding: 3px;
+}
+
+.star {
+    max-width: 50px;
+    max-height: 50px;
+}
+
+/* Media Queries */
+@media (min-width: 600px) {
+    #playingSection {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    .spell, .star {
+        width: 40px;
+        height: 40px;
+    }
+
+    button {
+        font-size: 1.2rem;
+    }
+}

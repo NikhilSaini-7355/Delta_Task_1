@@ -13,6 +13,9 @@
 //  var redBullet = {
 
 //  }
+window.addEventListener("load",()=>{
+    populateGrid();
+})
 isDirectionalBulletOptionPresent = false;
 isRotationOptionForRicoSemiricoPresent = false;
 var playerWon = false;
@@ -148,11 +151,11 @@ function saveInitialConfiguration()
             const child = document.createElement("div");
             if((i+h)%2==1)
                 {
-                    child.setAttribute('style','border-style: solid; border-width: thin; width:80px ; height: 80px;background-color:grey;');
+                    child.setAttribute('style','border-style: solid; border-width: thin; width:80px ; height: 80px;background-color:khaki; border-radius:10%');
                 }
                 else
                 {
-                    child.setAttribute('style','border-style: solid; border-width: thin; width:80px ; height: 80px;background-color:green ;');
+                    child.setAttribute('style','border-style: solid; border-width: thin; width:80px ; height: 80px;background-color:darkgreen ; border-radius:10%');
                 }
                 child.setAttribute('id','box-'+i);
                 child.setAttribute('class','box ');
@@ -284,11 +287,13 @@ function rotatePieceleft(index)
    changeChance();
    saveToStorage(index,null,"rotate");
    if(boardStatus[index].indexOf("red")!=-1)
-    {
+    {   player1timer(0);
+        player2timer(1);
         shootBullet("red");
     }
     else
-    {
+    {   player1timer(1);
+        player2timer(0);
         shootBullet("black");
     }
    removerotateOptionsForRicoAndSemirico(index);
@@ -307,11 +312,13 @@ function rotatePieceright(index)
    changeChance();
    saveToStorage(index,null,"rotate");
    if(boardStatus[index].indexOf("red")!=-1)
-    {
+    {   player1timer(0);
+        player2timer(1);
         shootBullet("red");
     }
     else
-    {
+    {   player1timer(1);
+        player2timer(0);
         shootBullet("black");
     }
    removerotateOptionsForRicoAndSemirico(index);
@@ -331,11 +338,13 @@ function rotatePieceup(index)
    changeChance();
    saveToStorage(index,null,"rotate");
    if(boardStatus[index].indexOf("red")!=-1)
-    {
+    {   player1timer(0);
+        player2timer(1);
         shootBullet("red");
     }
     else
-    {
+    {   player1timer(1);
+        player2timer(0);
         shootBullet("black");
     }
    removerotateOptionsForRicoAndSemirico(index);
@@ -361,11 +370,13 @@ function rotatePiecedown(index)
    changeChance();
    saveToStorage(index,null,"rotate");
    if(boardStatus[index].indexOf("red")!=-1)
-    {
+    {   player1timer(0);
+        player2timer(1);
         shootBullet("red");
     }
     else
-    {
+    {   player1timer(1);
+        player2timer(0);
         shootBullet("black");
     }
    removerotateOptionsForRicoAndSemirico(index);
@@ -1132,7 +1143,7 @@ function ObjectHitSemiRicochet(ObjectHit,color)
         {
             if(bullet_direction=="right")
                 {   
-                    calculateVerticalBulletDifference(boardStatus.indexOf(ObjectHit),color,"up");
+                    calculateVerticalDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"up");
                 }
             else if(bullet_direction=="down")
                 {
@@ -1200,7 +1211,7 @@ function ObjectHitSemiRicochet(ObjectHit,color)
                 }
             else if(bullet_direction=="up")
                 { 
-                    calculateLeftDifferenceForCanon(boardStatus.indexOf(ObjectHit),color,"left");
+                    calculateLeftBulletDifference(boardStatus.indexOf(ObjectHit),color,"left");
                 }
         }
 }
@@ -1238,13 +1249,13 @@ function changeChance()
     if(gameChance=="red")
         {
             gameChance = "black";
-            player1timer(0);  // new additions
-            player2timer(1);  // new additions 
+            // player1timer(0);  // new additions
+            // player2timer(1);  // new additions 
         }
       else{
         gameChance = "red";
-        player1timer(1);
-        player2timer(0);
+        // player1timer(1);
+        // player2timer(0);
       }
 }
 var steps = 0;
@@ -1641,11 +1652,13 @@ function rotateCanon(index,CanonDirection)
    changeChance();
    saveToStorage(index,null,"rotate");
    if(boardStatus[index].indexOf("red")!=-1)
-    {
+    {   player1timer(0);
+        player2timer(1);
         shootBullet("red");
     }
     else
-    {
+    {   player1timer(1);
+        player2timer(0);
         shootBullet("black");
     }
    removedirectionalBulletShootOption(index);
